@@ -13,12 +13,13 @@ const getAllGRCServices = async (req, res) => {
     if (level) {
       query.level = level;
     }
-    if (isActive !== undefined) {
+    if (isActive !== undefined && isActive !== 'all') {
       query.isActive = isActive === 'true';
-    } else {
+    } else if (isActive === undefined) {
       // By default, only show active services for public API
       query.isActive = true;
     }
+    // If isActive === 'all', don't add any filter (show both active and inactive)
 
     // Text search
     if (search) {

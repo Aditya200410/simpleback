@@ -20,6 +20,7 @@ const grcServiceRoutes = require('./routes/grcServices');
 const queryRoutes = require('./routes/queries');
 const paymentRoutes = require('./routes/payment');
 const studentRoutes = require('./routes/students');
+const blogRoutes = require('./routes/blogs');
 
 const app = express();
 
@@ -41,6 +42,7 @@ app.use('/api/grc-services', grcServiceRoutes);
 app.use('/api/queries', queryRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/blogs', blogRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
