@@ -156,13 +156,13 @@ const seedGRCServices = async () => {
     console.log('✅ Connected to MongoDB');
 
     // Find or create a default admin user
-    let adminUser = await User.findOne({ email: 'admin@cyberatix.com' });
+    let adminUser = await User.findOne({ email: 'admin@cyberatrix.com' });
     
     if (!adminUser) {
       console.log('👤 Creating default admin user...');
       adminUser = await User.create({
         name: 'System Admin',
-        email: 'admin@cyberatix.com',
+        email: 'admin@cyberatrix.com',
         password: 'hashedpassword', // This should be properly hashed in production
         role: 'admin',
         isActive: true
