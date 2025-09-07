@@ -114,7 +114,7 @@ Our implementation process is designed to be efficient and minimally disruptive 
     ],
     pricing: {
       startingFrom: 15000,
-      currency: 'AUD',
+        currency: 'INR',
       includes: [
         'Gap analysis and risk assessment',
         'ISMS design and documentation',
@@ -150,7 +150,7 @@ Our implementation process is designed to be efficient and minimally disruptive 
       },
       {
         question: 'How much does ISO 27001 certification cost?',
-        answer: 'Costs vary depending on organization size, complexity, and current security posture. Our implementation services start from $15,000 AUD, plus certification body fees which are separate and typically range from $5,000-$15,000 AUD depending on organization size.'
+        answer: 'Costs vary depending on organization size, complexity, and current security posture. Our implementation services start from Rs 15,000, plus certification body fees which are separate and typically range from Rs 5,000-Rs 15,000 depending on organization size.'
       },
       {
         question: 'What happens after we get certified?',
@@ -290,7 +290,7 @@ Our approach is practical and business-focused, ensuring that security controls 
     ],
     pricing: {
       startingFrom: 12000,
-      currency: 'AUD',
+      currency: 'INR',
       includes: [
         'PCI DSS scope assessment',
         'Gap analysis and remediation planning',
