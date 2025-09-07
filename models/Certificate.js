@@ -11,7 +11,6 @@ const certificateSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Student ID is required'],
     trim: true,
-    unique: true,
     maxlength: [50, 'Student ID cannot exceed 50 characters']
   },
   studentEmail: {
@@ -104,7 +103,7 @@ const certificateSchema = new mongoose.Schema({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false // Allow null for public certificate requests
   }
 }, {
   timestamps: true
@@ -119,7 +118,7 @@ certificateSchema.index({ issueDate: -1 });
 certificateSchema.index({ createdAt: -1 });
 
 // Compound indexes
-certificateSchema.index({ studentId: 1, courseId: 1 }, { unique: true });
+certificateSchema.index({ studentEmail: 1, courseId: 1 }, { unique: true });
 certificateSchema.index({ status: 1, createdAt: -1 });
 
 // Pre-save middleware to generate certificate number

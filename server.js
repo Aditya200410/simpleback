@@ -18,6 +18,8 @@ const extraCategoryRoutes = require('./routes/extraCategories');
 const enrollmentRoutes = require('./routes/enrollments');
 const grcServiceRoutes = require('./routes/grcServices');
 const queryRoutes = require('./routes/queries');
+const paymentRoutes = require('./routes/payment');
+const studentRoutes = require('./routes/students');
 
 const app = express();
 
@@ -37,6 +39,8 @@ app.use('/api/extra-categories', extraCategoryRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/grc-services', grcServiceRoutes);
 app.use('/api/queries', queryRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api/students', studentRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {

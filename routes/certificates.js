@@ -10,10 +10,20 @@ const {
   rejectCertificate,
   issueCertificate,
   deleteCertificate,
-  getCertificateStats
+  getCertificateStats,
+  requestCertificate,
+  getCertificatesByStudentEmail,
+  getCertificateByStudentAndCourse,
+  verifyCertificateByNumber
 } = require('../controllers/certificateController');
 
-// All routes require authentication
+// Public routes (no authentication required)
+router.post('/request', requestCertificate);
+router.get('/student/:email', getCertificatesByStudentEmail);
+router.get('/student/:email/course/:courseId', getCertificateByStudentAndCourse);
+router.get('/verify/:certificateNumber', verifyCertificateByNumber);
+
+// Protected routes (require authentication)
 router.use(auth);
 
 // GET /api/certificates/stats - Get certificate statistics

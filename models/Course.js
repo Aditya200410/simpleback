@@ -96,6 +96,27 @@ const courseSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  // Instructor details
+  instructorName: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Instructor name cannot exceed 100 characters']
+  },
+  instructorBio: {
+    type: String,
+    trim: true,
+    maxlength: [500, 'Instructor bio cannot exceed 500 characters']
+  },
+  instructorExperience: {
+    type: String,
+    trim: true,
+    maxlength: [200, 'Instructor experience cannot exceed 200 characters']
+  },
+  instructorQualifications: {
+    type: String,
+    trim: true,
+    maxlength: [300, 'Instructor qualifications cannot exceed 300 characters']
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
