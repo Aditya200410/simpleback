@@ -10,6 +10,7 @@ process.env.PORT = process.env.PORT || '5000';
 
 const authRoutes = require('./routes/auth');
 const courseRoutes = require('./routes/courses');
+const solutionRoutes = require('./routes/solutions');
 const dashboardRoutes = require('./routes/dashboard');
 const categoryRoutes = require('./routes/categories');
 const reviewRoutes = require('./routes/reviews');
@@ -32,6 +33,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
+app.use('/api/solutions', solutionRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/reviews', reviewRoutes);
@@ -96,6 +98,53 @@ app.get('/api/courses/public/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch course'
+    });
+  }
+});
+
+// Public solutions routes (bypass middleware)
+const Solution = require('./models/Solution');
+app.get('/api/solutions/public', async (req, res) => {
+  try {
+    const solutions = await Solution.find()
+      .populate('createdBy', 'email')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      solutions,
+      total: solutions.length
+    });
+  } catch (error) {
+    console.error('Get solutions error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch solutions'
+    });
+  }
+});
+
+app.get('/api/solutions/public/:id', async (req, res) => {
+  try {
+    const solution = await Solution.findById(req.params.id)
+      .populate('createdBy', 'email');
+
+    if (!solution) {
+      return res.status(404).json({
+        success: false,
+        message: 'Solution not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      solution
+    });
+  } catch (error) {
+    console.error('Get solution error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch solution'
     });
   }
 });

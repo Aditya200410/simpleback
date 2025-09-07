@@ -3,15 +3,12 @@ const GRCService = require('../models/GRCService');
 // Get all GRC services
 const getAllGRCServices = async (req, res) => {
   try {
-    const { category, level, isActive, search } = req.query;
+    const { category, isActive, search } = req.query;
     let query = {};
 
     // Build query based on filters
     if (category && category !== 'All') {
       query.category = category;
-    }
-    if (level) {
-      query.level = level;
     }
     if (isActive !== undefined && isActive !== 'all') {
       query.isActive = isActive === 'true';
@@ -51,7 +48,8 @@ const getGRCServiceById = async (req, res) => {
   try {
     const service = await GRCService.findById(req.params.id)
       .populate('createdBy', 'name email')
-      .populate('updatedBy', 'name email');
+      .populate('updatedBy', 'name email')
+      .populate('relatedServices', 'title slug icon shortDescription');
 
     if (!service) {
       return res.status(404).json({
@@ -74,13 +72,65 @@ const getGRCServiceById = async (req, res) => {
   }
 };
 
+// Get single GRC service by slug
+const getGRCServiceBySlug = async (req, res) => {
+  try {
+    const service = await GRCService.findOne({ slug: req.params.slug, isActive: true })
+      .populate('createdBy', 'name email')
+      .populate('updatedBy', 'name email')
+      .populate('relatedServices', 'title slug icon shortDescription duration');
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: 'GRC service not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: service
+    });
+  } catch (error) {
+    console.error('Error fetching GRC service by slug:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching GRC service',
+      error: error.message
+    });
+  }
+};
+
 // Create new GRC service (Admin only)
 const createGRCService = async (req, res) => {
   try {
-    const { title, category, description, icon, features, duration, level, priority } = req.body;
+    const { 
+      title, 
+      category, 
+      shortDescription, 
+      detailedDescription, 
+      icon, 
+      features, 
+      benefits,
+      process,
+      requirements,
+      deliverables,
+      pricing,
+      duration, 
+      industry,
+      compliance,
+      faqs,
+      testimonials,
+      caseStudies,
+      relatedServices,
+      priority
+    } = req.body;
+
+    // Generate slug from title
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     // Validation
-    if (!title || !category || !description || !features || !duration || !level) {
+    if (!title || !category || !shortDescription || !detailedDescription || !features || !duration) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be provided'
@@ -96,20 +146,33 @@ const createGRCService = async (req, res) => {
 
     const service = new GRCService({
       title,
+      slug,
       category,
-      description,
+      shortDescription,
+      detailedDescription,
       icon: icon || '🛡️',
       features,
+      benefits: benefits || [],
+      process: process || [],
+      requirements: requirements || [],
+      deliverables: deliverables || [],
+      pricing: pricing || {},
       duration,
-      level,
+      industry: industry || [],
+      compliance: compliance || [],
+      faqs: faqs || [],
+      testimonials: testimonials || [],
+      caseStudies: caseStudies || [],
+      relatedServices: relatedServices || [],
       priority: priority || 0,
       createdBy: req.user.id
     });
 
     await service.save();
 
-    const populatedService = await GRCService.findById(service._id)
-      .populate('createdBy', 'name email');
+    const populatedService = await GRCService.findById(service._id)   
+      .populate('createdBy', 'name email')
+      .populate('relatedServices', 'title slug icon shortDescription');
 
     res.status(201).json({
       success: true,
@@ -129,7 +192,28 @@ const createGRCService = async (req, res) => {
 // Update GRC service (Admin only)
 const updateGRCService = async (req, res) => {
   try {
-    const { title, category, description, icon, features, duration, level, priority, isActive } = req.body;
+    const { 
+      title, 
+      category, 
+      shortDescription, 
+      detailedDescription, 
+      icon, 
+      features, 
+      benefits,
+      process,
+      requirements,
+      deliverables,
+      pricing,
+      duration, 
+      industry,
+      compliance,
+      faqs,
+      testimonials,
+      caseStudies,
+      relatedServices,
+      priority, 
+      isActive
+    } = req.body;
 
     const service = await GRCService.findById(req.params.id);
 
@@ -141,23 +225,39 @@ const updateGRCService = async (req, res) => {
     }
 
     // Update fields
-    if (title) service.title = title;
+    if (title) {
+      service.title = title;
+      // Update slug if title changed
+      service.slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    }
     if (category) service.category = category;
-    if (description) service.description = description;
+    if (shortDescription) service.shortDescription = shortDescription;
+    if (detailedDescription) service.detailedDescription = detailedDescription;
     if (icon) service.icon = icon;
     if (features && Array.isArray(features)) service.features = features;
+    if (benefits && Array.isArray(benefits)) service.benefits = benefits;
+    if (process && Array.isArray(process)) service.process = process;
+    if (requirements && Array.isArray(requirements)) service.requirements = requirements;
+    if (deliverables && Array.isArray(deliverables)) service.deliverables = deliverables;
+    if (pricing) service.pricing = pricing;
     if (duration) service.duration = duration;
-    if (level) service.level = level;
+    if (industry && Array.isArray(industry)) service.industry = industry;
+    if (compliance && Array.isArray(compliance)) service.compliance = compliance;
+    if (faqs && Array.isArray(faqs)) service.faqs = faqs;
+    if (testimonials && Array.isArray(testimonials)) service.testimonials = testimonials;
+    if (caseStudies && Array.isArray(caseStudies)) service.caseStudies = caseStudies;
+    if (relatedServices && Array.isArray(relatedServices)) service.relatedServices = relatedServices;
     if (priority !== undefined) service.priority = priority;
     if (isActive !== undefined) service.isActive = isActive;
-    
+
     service.updatedBy = req.user.id;
 
     await service.save();
 
-    const populatedService = await GRCService.findById(service._id)
+    const populatedService = await GRCService.findById(service._id)   
       .populate('createdBy', 'name email')
-      .populate('updatedBy', 'name email');
+      .populate('updatedBy', 'name email')
+      .populate('relatedServices', 'title slug icon shortDescription');
 
     res.json({
       success: true,
@@ -259,6 +359,7 @@ const getGRCServiceCategories = async (req, res) => {
 module.exports = {
   getAllGRCServices,
   getGRCServiceById,
+  getGRCServiceBySlug,
   createGRCService,
   updateGRCService,
   deleteGRCService,

@@ -44,7 +44,46 @@ const seedData = async () => {
         courseName: 'Full Stack Web Development',
         category: 'Web Development',
         description: 'Learn to build complete web applications using React, Node.js, and MongoDB. Cover frontend, backend, and database integration.',
-        amount: 299.99,
+        pricing: {
+          online: {
+            amount: 299.99,
+            description: [
+              'Self-paced online learning modules',
+              'Lifetime access to course materials',
+              'Interactive coding exercises',
+              'Community forum support',
+              'Certificate of completion',
+              'Mobile app for learning on-the-go'
+            ]
+          },
+          offline: {
+            amount: 499.99,
+            description: [
+              'In-person classroom training',
+              'Expert instructor guidance',
+              'Hands-on project workshops',
+              'Group learning sessions',
+              'Networking opportunities',
+              'Industry guest lectures',
+              'Certificate of completion'
+            ]
+          },
+          corporate: {
+            amount: 999.99,
+            description: [
+              'Customized training for your team',
+              'On-site or off-site delivery',
+              'Tailored curriculum based on needs',
+              'Dedicated project manager',
+              'Post-training support',
+              'Team progress tracking',
+              'Bulk pricing available',
+              'Certificates for all participants'
+            ]
+          }
+        },
+        amount: 299.99, // Legacy field for backward compatibility
+        level: 'Intermediate',
         startDate: new Date('2024-02-01'),
         endDate: new Date('2024-05-01'),
         totalHours: 120,
@@ -56,7 +95,46 @@ const seedData = async () => {
         courseName: 'Data Science with Python',
         category: 'Data Science',
         description: 'Master data analysis, machine learning, and visualization using Python, Pandas, and Scikit-learn.',
+        pricing: {
+          online: {
+            amount: 399.99,
+            description: [
+              'Self-paced online learning modules',
+              'Jupyter notebook exercises',
+              'Real-world datasets for practice',
+              'Machine learning project portfolio',
+              'Community forum support',
+              'Certificate of completion'
+            ]
+          },
+          offline: {
+            amount: 699.99,
+            description: [
+              'In-person classroom training',
+              'Expert data scientist instructor',
+              'Hands-on data analysis workshops',
+              'Group project collaboration',
+              'Industry case studies',
+              'Networking with data professionals',
+              'Certificate of completion'
+            ]
+          },
+          corporate: {
+            amount: 1299.99,
+            description: [
+              'Customized data science training',
+              'Company-specific datasets',
+              'On-site or off-site delivery',
+              'Dedicated data science mentor',
+              'Team analytics projects',
+              'Progress tracking dashboard',
+              'Bulk pricing available',
+              'Certificates for all participants'
+            ]
+          }
+        },
         amount: 399.99,
+        level: 'Intermediate',
         startDate: new Date('2024-01-15'),
         endDate: new Date('2024-04-15'),
         totalHours: 100,
@@ -68,7 +146,46 @@ const seedData = async () => {
         courseName: 'Mobile App Development with React Native',
         category: 'Mobile Development',
         description: 'Build cross-platform mobile applications for iOS and Android using React Native.',
+        pricing: {
+          online: {
+            amount: 349.99,
+            description: [
+              'Self-paced online learning modules',
+              'React Native development environment setup',
+              'Cross-platform app building exercises',
+              'App store deployment guidance',
+              'Community forum support',
+              'Certificate of completion'
+            ]
+          },
+          offline: {
+            amount: 599.99,
+            description: [
+              'In-person classroom training',
+              'Expert mobile developer instructor',
+              'Hands-on app development workshops',
+              'Device testing and debugging',
+              'App store submission process',
+              'Networking with mobile developers',
+              'Certificate of completion'
+            ]
+          },
+          corporate: {
+            amount: 1199.99,
+            description: [
+              'Customized mobile development training',
+              'Company-specific app requirements',
+              'On-site or off-site delivery',
+              'Dedicated mobile development mentor',
+              'Team app development projects',
+              'Progress tracking dashboard',
+              'Bulk pricing available',
+              'Certificates for all participants'
+            ]
+          }
+        },
         amount: 349.99,
+        level: 'Beginner',
         startDate: new Date('2024-03-01'),
         endDate: new Date('2024-06-01'),
         totalHours: 90,
@@ -80,7 +197,46 @@ const seedData = async () => {
         courseName: 'Cybersecurity Fundamentals',
         category: 'Cybersecurity',
         description: 'Learn essential cybersecurity concepts, ethical hacking, and security best practices.',
+        pricing: {
+          online: {
+            amount: 449.99,
+            description: [
+              'Self-paced online learning modules',
+              'Virtual lab environment access',
+              'Ethical hacking simulations',
+              'Security assessment tools',
+              'Community forum support',
+              'Certificate of completion'
+            ]
+          },
+          offline: {
+            amount: 799.99,
+            description: [
+              'In-person classroom training',
+              'Expert cybersecurity instructor',
+              'Hands-on security testing labs',
+              'Penetration testing workshops',
+              'Industry security case studies',
+              'Networking with security professionals',
+              'Certificate of completion'
+            ]
+          },
+          corporate: {
+            amount: 1499.99,
+            description: [
+              'Customized cybersecurity training',
+              'Company security assessment',
+              'On-site or off-site delivery',
+              'Dedicated security consultant',
+              'Team security projects',
+              'Security audit guidance',
+              'Bulk pricing available',
+              'Certificates for all participants'
+            ]
+          }
+        },
         amount: 449.99,
+        level: 'Advanced',
         startDate: new Date('2024-02-15'),
         endDate: new Date('2024-05-15'),
         totalHours: 80,
@@ -92,7 +248,46 @@ const seedData = async () => {
         courseName: 'Cloud Computing with AWS',
         category: 'Cloud Computing',
         description: 'Master Amazon Web Services, cloud architecture, and deployment strategies.',
+        pricing: {
+          online: {
+            amount: 499.99,
+            description: [
+              'Self-paced online learning modules',
+              'AWS free tier account setup',
+              'Hands-on cloud projects',
+              'Architecture design exercises',
+              'Community forum support',
+              'Certificate of completion'
+            ]
+          },
+          offline: {
+            amount: 899.99,
+            description: [
+              'In-person classroom training',
+              'Expert AWS certified instructor',
+              'Hands-on cloud deployment labs',
+              'Real-world architecture projects',
+              'AWS certification preparation',
+              'Networking with cloud professionals',
+              'Certificate of completion'
+            ]
+          },
+          corporate: {
+            amount: 1699.99,
+            description: [
+              'Customized cloud training',
+              'Company cloud migration strategy',
+              'On-site or off-site delivery',
+              'Dedicated cloud architect',
+              'Team cloud projects',
+              'Cost optimization guidance',
+              'Bulk pricing available',
+              'Certificates for all participants'
+            ]
+          }
+        },
         amount: 499.99,
+        level: 'Advanced',
         startDate: new Date('2024-01-01'),
         endDate: new Date('2024-03-31'),
         totalHours: 110,

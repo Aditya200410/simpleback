@@ -18,9 +18,45 @@ const courseSchema = new mongoose.Schema({
     trim: true,
     maxlength: [1000, 'Description cannot exceed 1000 characters']
   },
+  // Pricing for different enrollment types
+  pricing: {
+    online: {
+      amount: {
+        type: Number,
+        required: [true, 'Online amount is required'],
+        min: [0, 'Online amount must be positive']
+      },
+      description: {
+        type: [String],
+        required: [true, 'Online description is required']
+      }
+    },
+    offline: {
+      amount: {
+        type: Number,
+        required: [true, 'Offline amount is required'],
+        min: [0, 'Offline amount must be positive']
+      },
+      description: {
+        type: [String],
+        required: [true, 'Offline description is required']
+      }
+    },
+    corporate: {
+      amount: {
+        type: Number,
+        required: [true, 'Corporate amount is required'],
+        min: [0, 'Corporate amount must be positive']
+      },
+      description: {
+        type: [String],
+        required: [true, 'Corporate description is required']
+      }
+    }
+  },
+  // Legacy amount field for backward compatibility
   amount: {
     type: Number,
-    required: [true, 'Amount is required'],
     min: [0, 'Amount must be positive']
   },
   startDate: {
@@ -117,6 +153,48 @@ const courseSchema = new mongoose.Schema({
     trim: true,
     maxlength: [300, 'Instructor qualifications cannot exceed 300 characters']
   },
+  // Course batches
+  batches: [{
+    batchName: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: [100, 'Batch name cannot exceed 100 characters']
+    },
+    startDate: {
+      type: Date,
+      required: true
+    },
+    endDate: {
+      type: Date,
+      required: true,
+      validate: {
+        validator: function(value) {
+          return value > this.startDate;
+        },
+        message: 'Batch end date must be after start date'
+      }
+    },
+    maxStudents: {
+      type: Number,
+      default: 30,
+      min: [1, 'Max students must be at least 1']
+    },
+    enrolledStudents: {
+      type: Number,
+      default: 0
+    },
+    status: {
+      type: String,
+      enum: ['Upcoming', 'Ongoing', 'Completed', 'Cancelled'],
+      default: 'Upcoming'
+    },
+    description: {
+      type: String,
+      trim: true,
+      maxlength: [200, 'Batch description cannot exceed 200 characters']
+    }
+  }],
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

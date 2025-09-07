@@ -4,6 +4,7 @@ const { auth } = require('../middleware/auth');
 const {
   getAllGRCServices,
   getGRCServiceById,
+  getGRCServiceBySlug,
   createGRCService,
   updateGRCService,
   deleteGRCService,
@@ -14,6 +15,7 @@ const {
 // Public routes (no authentication required)
 router.get('/', getAllGRCServices);
 router.get('/categories', getGRCServiceCategories);
+router.get('/slug/:slug', getGRCServiceBySlug);
 router.get('/:id', getGRCServiceById);
 
 // Protected routes (authentication required)

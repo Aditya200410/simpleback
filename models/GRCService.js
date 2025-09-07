@@ -6,12 +6,24 @@ const grcServiceSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
   category: {
     type: String,
     required: true,
     trim: true
   },
-  description: {
+  shortDescription: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  detailedDescription: {
     type: String,
     required: true,
     trim: true
@@ -25,17 +37,67 @@ const grcServiceSchema = new mongoose.Schema({
     type: String,
     required: true
   }],
+  benefits: [{
+    title: String,
+    description: String
+  }],
+  process: [{
+    step: Number,
+    title: String,
+    description: String,
+    duration: String
+  }],
+  requirements: [{
+    type: String,
+    required: true
+  }],
+  deliverables: [{
+    type: String,
+    required: true
+  }],
+  pricing: {
+    startingFrom: Number,
+    currency: {
+      type: String,
+      default: 'INR'
+    },
+    includes: [String],
+    excludes: [String]
+  },
   duration: {
     type: String,
     required: true,
     trim: true
   },
-  level: {
+  industry: [{
     type: String,
-    required: true,
-    enum: ['Essential', 'Critical', 'Enterprise', 'Strategic'],
-    default: 'Essential'
-  },
+    trim: true
+  }],
+  compliance: [{
+    type: String,
+    trim: true
+  }],
+  faqs: [{
+    question: String,
+    answer: String
+  }],
+  testimonials: [{
+    name: String,
+    company: String,
+    position: String,
+    content: String,
+    rating: Number
+  }],
+  caseStudies: [{
+    title: String,
+    description: String,
+    industry: String,
+    results: [String]
+  }],
+  relatedServices: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'GRCService'
+  }],
   isActive: {
     type: Boolean,
     default: true
@@ -59,7 +121,8 @@ const grcServiceSchema = new mongoose.Schema({
 
 // Index for better performance
 grcServiceSchema.index({ category: 1, isActive: 1 });
-grcServiceSchema.index({ level: 1, isActive: 1 });
-grcServiceSchema.index({ title: 'text', description: 'text' });
+grcServiceSchema.index({ slug: 1 });
+grcServiceSchema.index({ industry: 1, isActive: 1 });
+grcServiceSchema.index({ title: 'text', shortDescription: 'text', detailedDescription: 'text' });
 
 module.exports = mongoose.model('GRCService', grcServiceSchema);
