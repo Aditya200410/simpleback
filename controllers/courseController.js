@@ -16,7 +16,9 @@ const createCourse = async (req, res) => {
       level,
       skillsYouWillLearn,
       whoShouldTakeThisCourse,
-      faq
+      faq,
+      pricing,
+      batches
     } = req.body;
 
     // Validate required fields
@@ -41,6 +43,28 @@ const createCourse = async (req, res) => {
       processedFAQ = faq.filter(item => item.question && item.answer);
     }
 
+    // Process pricing object
+    let processedPricing = {
+      online: { amount: 0, description: [] },
+      offline: { amount: 0, description: [] },
+      corporate: { amount: 0, description: [] }
+    };
+    if (pricing) {
+      processedPricing = pricing;
+    }
+
+    // Process batches array
+    let processedBatches = [];
+    if (batches && Array.isArray(batches)) {
+      processedBatches = batches.map(batch => ({
+        ...batch,
+        startDate: new Date(batch.startDate),
+        endDate: new Date(batch.endDate),
+        maxStudents: parseInt(batch.maxStudents) || 30,
+        enrolledStudents: parseInt(batch.enrolledStudents) || 0
+      }));
+    }
+
     // Create new course
     const course = new Course({
       courseName,
@@ -55,6 +79,8 @@ const createCourse = async (req, res) => {
       skillsYouWillLearn: processedSkills,
       whoShouldTakeThisCourse,
       faq: processedFAQ,
+      pricing: processedPricing,
+      batches: processedBatches,
       createdBy: req.userId
     });
 
@@ -137,7 +163,9 @@ const updateCourse = async (req, res) => {
       level,
       skillsYouWillLearn,
       whoShouldTakeThisCourse,
-      faq
+      faq,
+      pricing,
+      batches
     } = req.body;
 
     const course = await Course.findById(req.params.id);
@@ -172,6 +200,23 @@ const updateCourse = async (req, res) => {
     // Process FAQ array
     if (faq !== undefined) {
       course.faq = Array.isArray(faq) ? faq.filter(item => item.question && item.answer) : [];
+    }
+
+    // Process pricing object
+    if (pricing !== undefined) {
+      course.pricing = pricing;
+    }
+
+    // Process batches array
+    if (batches !== undefined) {
+      // Process each batch to ensure proper date handling
+      course.batches = batches.map(batch => ({
+        ...batch,
+        startDate: new Date(batch.startDate),
+        endDate: new Date(batch.endDate),
+        maxStudents: parseInt(batch.maxStudents) || 30,
+        enrolledStudents: parseInt(batch.enrolledStudents) || 0
+      }));
     }
 
     await course.save();

@@ -39,6 +39,32 @@ const enrollmentSchema = new mongoose.Schema({
     min: [0, 'Course amount must be positive']
   },
 
+  // Batch Information
+  batchId: {
+    type: String,
+    trim: true
+  },
+  batchName: {
+    type: String,
+    trim: true
+  },
+  batchStartDate: {
+    type: Date
+  },
+  batchEndDate: {
+    type: Date
+  },
+  batchStatus: {
+    type: String,
+    enum: ['Upcoming', 'Ongoing', 'Completed', 'Cancelled'],
+    default: 'Upcoming'
+  },
+  enrollmentType: {
+    type: String,
+    enum: ['online', 'offline', 'corporate'],
+    default: 'online'
+  },
+
   // Enrollment Details
   experience: {
     type: String,
