@@ -15,7 +15,13 @@ const createEnrollment = async (req, res) => {
       motivation,
       learningGoals,
       preferredStartDate,
-      howDidYouHear
+      howDidYouHear,
+      batchId,
+      batchName,
+      batchStartDate,
+      batchEndDate,
+      batchStatus,
+      enrollmentType
     } = req.body;
 
     // Validate required fields
@@ -44,9 +50,41 @@ const createEnrollment = async (req, res) => {
       });
     }
 
+    // If batch information is provided, validate it
+    if (batchId && course.batches && course.batches.length > 0) {
+      const selectedBatch = course.batches.find(batch => 
+        batch.batchName === batchName || batch._id.toString() === batchId
+      );
+      
+      if (!selectedBatch) {
+        return res.status(400).json({
+          success: false,
+          message: 'Selected batch not found for this course'
+        });
+      }
+
+      // Check if batch has available capacity
+      if (selectedBatch.enrolledStudents >= selectedBatch.maxStudents) {
+        return res.status(400).json({
+          success: false,
+          message: 'Selected batch is full. Please choose another batch.'
+        });
+      }
+    }
+
     // Get client information
     const ipAddress = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent');
+
+    // Determine course amount based on enrollment type
+    let finalCourseAmount = courseAmount;
+    if (enrollmentType && course.pricing && course.pricing[enrollmentType]) {
+      finalCourseAmount = course.pricing[enrollmentType].amount;
+    } else if (courseAmount !== undefined) {
+      finalCourseAmount = courseAmount;
+    } else {
+      finalCourseAmount = course.amount;
+    }
 
     // Create new enrollment
     const enrollment = new Enrollment({
@@ -55,16 +93,22 @@ const createEnrollment = async (req, res) => {
       phone,
       courseId,
       courseName,
-      courseAmount: courseAmount !== undefined ? courseAmount : course.amount,
+      courseAmount: finalCourseAmount,
       experience: experience || 'Beginner',
       motivation,
       learningGoals,
       preferredStartDate: preferredStartDate ? new Date(preferredStartDate) : undefined,
       howDidYouHear,
+      batchId,
+      batchName,
+      batchStartDate: batchStartDate ? new Date(batchStartDate) : undefined,
+      batchEndDate: batchEndDate ? new Date(batchEndDate) : undefined,
+      batchStatus: batchStatus || 'Upcoming',
+      enrollmentType: enrollmentType || 'online',
       ipAddress,
       userAgent,
-      status: course.amount === 0 ? 'Approved' : 'Pending', // Auto-approve free courses
-      paymentStatus: course.amount === 0 ? 'Free' : 'Pending'
+      status: finalCourseAmount === 0 ? 'Approved' : 'Pending', // Auto-approve free courses
+      paymentStatus: finalCourseAmount === 0 ? 'Free' : 'Pending'
     });
 
     await enrollment.save();
@@ -73,6 +117,18 @@ const createEnrollment = async (req, res) => {
     await Course.findByIdAndUpdate(courseId, {
       $inc: { enrolledStudents: 1 }
     });
+
+    // Update batch enrollment count if batch is specified
+    if (batchId && course.batches && course.batches.length > 0) {
+      const batchIndex = course.batches.findIndex(batch => 
+        batch.batchName === batchName || batch._id.toString() === batchId
+      );
+      
+      if (batchIndex !== -1) {
+        course.batches[batchIndex].enrolledStudents = (course.batches[batchIndex].enrolledStudents || 0) + 1;
+        await course.save();
+      }
+    }
 
     // Populate course details
     await enrollment.populate('courseId', 'courseName category level totalHours');
@@ -86,6 +142,9 @@ const createEnrollment = async (req, res) => {
         fullName: enrollment.fullName,
         email: enrollment.email,
         courseName: enrollment.courseName,
+        batchName: enrollment.batchName,
+        batchStatus: enrollment.batchStatus,
+        enrollmentType: enrollment.enrollmentType,
         status: enrollment.status,
         paymentStatus: enrollment.paymentStatus,
         enrollmentDate: enrollment.enrollmentDate,
