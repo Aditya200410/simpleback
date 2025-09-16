@@ -195,6 +195,161 @@ const courseSchema = new mongoose.Schema({
       maxlength: [200, 'Batch description cannot exceed 200 characters']
     }
   }],
+  
+  // New fields from InfosecTrain analysis
+  vendor: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Vendor name cannot exceed 100 characters']
+  },
+  certificationBody: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Certification body cannot exceed 100 characters']
+  },
+  certificationName: {
+    type: String,
+    trim: true,
+    maxlength: [200, 'Certification name cannot exceed 200 characters']
+  },
+  examDetails: {
+    examFormat: {
+      type: String,
+      enum: ['Multiple Choice', 'Practical', 'Essay', 'Mixed', 'Online', 'Offline'],
+      default: 'Multiple Choice'
+    },
+    examDuration: {
+      type: Number, // in minutes
+      min: [0, 'Exam duration must be positive']
+    },
+    passingScore: {
+      type: Number,
+      min: [0, 'Passing score must be between 0-100'],
+      max: [100, 'Passing score must be between 0-100']
+    },
+    totalQuestions: {
+      type: Number,
+      min: [0, 'Total questions must be positive']
+    },
+    examLanguage: {
+      type: [String],
+      default: ['English']
+    }
+  },
+  prerequisites: [{
+    type: String,
+    trim: true,
+    maxlength: [200, 'Each prerequisite cannot exceed 200 characters']
+  }],
+  learningObjectives: [{
+    type: String,
+    trim: true,
+    maxlength: [300, 'Each learning objective cannot exceed 300 characters']
+  }],
+  courseModules: [{
+    moduleName: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: [100, 'Module name cannot exceed 100 characters']
+    },
+    moduleDescription: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Module description cannot exceed 500 characters']
+    },
+    duration: {
+      type: Number, // in hours
+      min: [0, 'Module duration must be positive']
+    },
+    topics: [{
+      type: String,
+      trim: true,
+      maxlength: [200, 'Each topic cannot exceed 200 characters']
+    }]
+  }],
+  careerBenefits: {
+    jobRoles: [{
+      type: String,
+      trim: true,
+      maxlength: [100, 'Each job role cannot exceed 100 characters']
+    }],
+    averageSalary: {
+      type: String,
+      trim: true,
+      maxlength: [50, 'Average salary cannot exceed 50 characters']
+    },
+    careerPath: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Career path cannot exceed 500 characters']
+    }
+  },
+  courseMaterials: {
+    included: [{
+      type: String,
+      trim: true,
+      maxlength: [100, 'Each material cannot exceed 100 characters']
+    }],
+    additionalCost: {
+      type: Number,
+      default: 0,
+      min: [0, 'Additional cost must be positive']
+    }
+  },
+  learningMode: {
+    type: [String],
+    enum: ['Live Online', 'Self-Paced', 'Classroom', 'Hybrid'],
+    default: ['Self-Paced']
+  },
+  courseLanguage: {
+    type: [String],
+    default: ['English']
+  },
+  refundPolicy: {
+    policy: {
+      type: String,
+      trim: true,
+      maxlength: [500, 'Refund policy cannot exceed 500 characters']
+    },
+    validityDays: {
+      type: Number,
+      default: 7,
+      min: [0, 'Refund validity must be positive']
+    }
+  },
+  courseHighlights: [{
+    type: String,
+    trim: true,
+    maxlength: [200, 'Each highlight cannot exceed 200 characters']
+  }],
+  targetAudience: [{
+    type: String,
+    trim: true,
+    maxlength: [100, 'Each target audience cannot exceed 100 characters']
+  }],
+  courseFormat: {
+    type: String,
+    enum: ['Video', 'Live Sessions', 'Text', 'Interactive', 'Mixed'],
+    default: 'Mixed'
+  },
+  accessDuration: {
+    type: Number, // in days
+    default: 365,
+    min: [1, 'Access duration must be at least 1 day']
+  },
+  supportDetails: {
+    supportType: {
+      type: [String],
+      enum: ['Email', 'Phone', 'Live Chat', 'Forum', 'Mentor'],
+      default: ['Email']
+    },
+    supportHours: {
+      type: String,
+      trim: true,
+      maxlength: [100, 'Support hours cannot exceed 100 characters']
+    }
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
