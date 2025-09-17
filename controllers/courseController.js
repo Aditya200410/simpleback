@@ -16,6 +16,11 @@ const createCourse = async (req, res) => {
       level,
       skillsYouWillLearn,
       whoShouldTakeThisCourse,
+      targetAudience,
+      prerequisites,
+      learningObjectives,
+      courseModules,
+      examDetails,
       faq,
       pricing,
       batches
@@ -41,6 +46,53 @@ const createCourse = async (req, res) => {
     let processedFAQ = [];
     if (faq && Array.isArray(faq)) {
       processedFAQ = faq.filter(item => item.question && item.answer);
+    }
+
+    // Process target audience array
+    let processedTargetAudience = [];
+    if (targetAudience && Array.isArray(targetAudience)) {
+      processedTargetAudience = targetAudience.filter(audience => audience && audience.trim());
+    }
+
+    // Process prerequisites array
+    let processedPrerequisites = [];
+    if (prerequisites && Array.isArray(prerequisites)) {
+      processedPrerequisites = prerequisites.filter(prereq => prereq && prereq.trim());
+    }
+
+    // Process learning objectives array
+    let processedLearningObjectives = [];
+    if (learningObjectives && Array.isArray(learningObjectives)) {
+      processedLearningObjectives = learningObjectives.filter(objective => objective && objective.trim());
+    }
+
+    // Process course modules array
+    let processedCourseModules = [];
+    if (courseModules && Array.isArray(courseModules)) {
+      processedCourseModules = courseModules.map(module => ({
+        moduleName: module.moduleName || '',
+        moduleDescription: module.moduleDescription || '',
+        duration: parseFloat(module.duration) || 0,
+        topics: Array.isArray(module.topics) ? module.topics.filter(topic => topic && topic.trim()) : []
+      }));
+    }
+
+    // Process exam details
+    let processedExamDetails = {
+      examFormat: 'Multiple Choice',
+      examDuration: 0,
+      passingScore: 0,
+      totalQuestions: 0,
+      examLanguage: ['English']
+    };
+    if (examDetails) {
+      processedExamDetails = {
+        examFormat: examDetails.examFormat || 'Multiple Choice',
+        examDuration: parseInt(examDetails.examDuration) || 0,
+        passingScore: parseInt(examDetails.passingScore) || 0,
+        totalQuestions: parseInt(examDetails.totalQuestions) || 0,
+        examLanguage: Array.isArray(examDetails.examLanguage) ? examDetails.examLanguage : ['English']
+      };
     }
 
     // Process pricing object
@@ -78,6 +130,11 @@ const createCourse = async (req, res) => {
       level,
       skillsYouWillLearn: processedSkills,
       whoShouldTakeThisCourse,
+      targetAudience: processedTargetAudience,
+      prerequisites: processedPrerequisites,
+      learningObjectives: processedLearningObjectives,
+      courseModules: processedCourseModules,
+      examDetails: processedExamDetails,
       faq: processedFAQ,
       pricing: processedPricing,
       batches: processedBatches,
@@ -163,6 +220,11 @@ const updateCourse = async (req, res) => {
       level,
       skillsYouWillLearn,
       whoShouldTakeThisCourse,
+      targetAudience,
+      prerequisites,
+      learningObjectives,
+      courseModules,
+      examDetails,
       faq,
       pricing,
       batches
@@ -205,6 +267,50 @@ const updateCourse = async (req, res) => {
     // Process pricing object
     if (pricing !== undefined) {
       course.pricing = pricing;
+    }
+
+    // Process target audience array
+    if (targetAudience !== undefined) {
+      course.targetAudience = Array.isArray(targetAudience) 
+        ? targetAudience.filter(audience => audience && audience.trim())
+        : [];
+    }
+
+    // Process prerequisites array
+    if (prerequisites !== undefined) {
+      course.prerequisites = Array.isArray(prerequisites) 
+        ? prerequisites.filter(prereq => prereq && prereq.trim())
+        : [];
+    }
+
+    // Process learning objectives array
+    if (learningObjectives !== undefined) {
+      course.learningObjectives = Array.isArray(learningObjectives) 
+        ? learningObjectives.filter(objective => objective && objective.trim())
+        : [];
+    }
+
+    // Process course modules array
+    if (courseModules !== undefined) {
+      course.courseModules = Array.isArray(courseModules) 
+        ? courseModules.map(module => ({
+            moduleName: module.moduleName || '',
+            moduleDescription: module.moduleDescription || '',
+            duration: parseFloat(module.duration) || 0,
+            topics: Array.isArray(module.topics) ? module.topics.filter(topic => topic && topic.trim()) : []
+          }))
+        : [];
+    }
+
+    // Process exam details
+    if (examDetails !== undefined) {
+      course.examDetails = {
+        examFormat: examDetails.examFormat || 'Multiple Choice',
+        examDuration: parseInt(examDetails.examDuration) || 0,
+        passingScore: parseInt(examDetails.passingScore) || 0,
+        totalQuestions: parseInt(examDetails.totalQuestions) || 0,
+        examLanguage: Array.isArray(examDetails.examLanguage) ? examDetails.examLanguage : ['English']
+      };
     }
 
     // Process batches array
