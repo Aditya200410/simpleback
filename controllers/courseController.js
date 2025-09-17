@@ -23,7 +23,9 @@ const createCourse = async (req, res) => {
       examDetails,
       faq,
       pricing,
-      batches
+      batches,
+      careerBenefits,
+      courseMaterials
     } = req.body;
 
     // Validate required fields
@@ -117,6 +119,32 @@ const createCourse = async (req, res) => {
       }));
     }
 
+    // Process career benefits
+    let processedCareerBenefits = {
+      jobRoles: [],
+      averageSalary: '',
+      careerPath: ''
+    };
+    if (careerBenefits) {
+      processedCareerBenefits = {
+        jobRoles: Array.isArray(careerBenefits.jobRoles) ? careerBenefits.jobRoles.filter(role => role && role.trim()) : [],
+        averageSalary: careerBenefits.averageSalary || '',
+        careerPath: careerBenefits.careerPath || ''
+      };
+    }
+
+    // Process course materials
+    let processedCourseMaterials = {
+      included: [],
+      additionalCost: 0
+    };
+    if (courseMaterials) {
+      processedCourseMaterials = {
+        included: Array.isArray(courseMaterials.included) ? courseMaterials.included.filter(material => material && material.trim()) : [],
+        additionalCost: parseFloat(courseMaterials.additionalCost) || 0
+      };
+    }
+
     // Create new course
     const course = new Course({
       courseName,
@@ -138,6 +166,8 @@ const createCourse = async (req, res) => {
       faq: processedFAQ,
       pricing: processedPricing,
       batches: processedBatches,
+      careerBenefits: processedCareerBenefits,
+      courseMaterials: processedCourseMaterials,
       createdBy: req.userId
     });
 
@@ -227,7 +257,9 @@ const updateCourse = async (req, res) => {
       examDetails,
       faq,
       pricing,
-      batches
+      batches,
+      careerBenefits,
+      courseMaterials
     } = req.body;
 
     const course = await Course.findById(req.params.id);
@@ -323,6 +355,23 @@ const updateCourse = async (req, res) => {
         maxStudents: parseInt(batch.maxStudents) || 30,
         enrolledStudents: parseInt(batch.enrolledStudents) || 0
       }));
+    }
+
+    // Process career benefits
+    if (careerBenefits !== undefined) {
+      course.careerBenefits = {
+        jobRoles: Array.isArray(careerBenefits.jobRoles) ? careerBenefits.jobRoles.filter(role => role && role.trim()) : [],
+        averageSalary: careerBenefits.averageSalary || '',
+        careerPath: careerBenefits.careerPath || ''
+      };
+    }
+
+    // Process course materials
+    if (courseMaterials !== undefined) {
+      course.courseMaterials = {
+        included: Array.isArray(courseMaterials.included) ? courseMaterials.included.filter(material => material && material.trim()) : [],
+        additionalCost: parseFloat(courseMaterials.additionalCost) || 0
+      };
     }
 
     await course.save();
