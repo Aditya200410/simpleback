@@ -418,6 +418,64 @@ const updateCourse = async (req, res) => {
   }
 };
 
+// Search courses
+const searchCourses = async (req, res) => {
+  try {
+    const { q, category, level, limit = 10 } = req.query;
+
+    if (!q || q.trim().length < 2) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query must be at least 2 characters long'
+      });
+    }
+
+    // Build search query
+    let searchQuery = {
+      $or: [
+        { courseName: { $regex: q, $options: 'i' } },
+        { description: { $regex: q, $options: 'i' } },
+        { shortDescription: { $regex: q, $options: 'i' } },
+        { category: { $regex: q, $options: 'i' } },
+        { skillsYouWillLearn: { $in: [new RegExp(q, 'i')] } },
+        { certificationName: { $regex: q, $options: 'i' } },
+        { vendor: { $regex: q, $options: 'i' } },
+        { certificationBody: { $regex: q, $options: 'i' } }
+      ],
+      status: 'Active' // Only show active courses
+    };
+
+    // Add category filter if provided
+    if (category && category !== 'All') {
+      searchQuery.category = category;
+    }
+
+    // Add level filter if provided
+    if (level && level !== 'All') {
+      searchQuery.level = level;
+    }
+
+    const courses = await Course.find(searchQuery)
+      .populate('createdBy', 'email')
+      .select('courseName shortDescription category level averageRating totalReviews pricing amount startDate endDate')
+      .limit(parseInt(limit))
+      .sort({ averageRating: -1, totalReviews: -1, createdAt: -1 });
+
+    res.json({
+      success: true,
+      courses,
+      total: courses.length,
+      query: q
+    });
+  } catch (error) {
+    console.error('Search courses error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to search courses'
+    });
+  }
+};
+
 // Delete course
 const deleteCourse = async (req, res) => {
   try {
@@ -450,5 +508,6 @@ module.exports = {
   getAllCourses,
   getCourseById,
   updateCourse,
-  deleteCourse
+  deleteCourse,
+  searchCourses
 };

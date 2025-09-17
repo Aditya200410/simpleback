@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCourse, getAllCourses, getCourseById, updateCourse, deleteCourse } = require('../controllers/courseController');
+const { createCourse, getAllCourses, getCourseById, updateCourse, deleteCourse, searchCourses } = require('../controllers/courseController');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -14,6 +14,11 @@ router.get('/public', getAllCourses);
 // @desc    Get course by ID (public access)
 // @access  Public
 router.get('/public/:id', getCourseById);
+
+// @route   GET /api/courses/search
+// @desc    Search courses (public access)
+// @access  Public
+router.get('/search', searchCourses);
 
 // Private routes (authentication required)
 router.use(auth);
