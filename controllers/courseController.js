@@ -25,7 +25,11 @@ const createCourse = async (req, res) => {
       pricing,
       batches,
       careerBenefits,
-      courseMaterials
+      courseMaterials,
+      vendor,
+      certificationBody,
+      certificationName,
+      courseHighlights
     } = req.body;
 
     // Validate required fields
@@ -145,6 +149,12 @@ const createCourse = async (req, res) => {
       };
     }
 
+    // Process course highlights
+    let processedCourseHighlights = [];
+    if (courseHighlights && Array.isArray(courseHighlights)) {
+      processedCourseHighlights = courseHighlights.filter(highlight => highlight && highlight.trim());
+    }
+
     // Create new course
     const course = new Course({
       courseName,
@@ -168,6 +178,10 @@ const createCourse = async (req, res) => {
       batches: processedBatches,
       careerBenefits: processedCareerBenefits,
       courseMaterials: processedCourseMaterials,
+      vendor: vendor || '',
+      certificationBody: certificationBody || '',
+      certificationName: certificationName || '',
+      courseHighlights: processedCourseHighlights,
       createdBy: req.userId
     });
 
@@ -259,7 +273,11 @@ const updateCourse = async (req, res) => {
       pricing,
       batches,
       careerBenefits,
-      courseMaterials
+      courseMaterials,
+      vendor,
+      certificationBody,
+      certificationName,
+      courseHighlights
     } = req.body;
 
     const course = await Course.findById(req.params.id);
@@ -372,6 +390,16 @@ const updateCourse = async (req, res) => {
         included: Array.isArray(courseMaterials.included) ? courseMaterials.included.filter(material => material && material.trim()) : [],
         additionalCost: parseFloat(courseMaterials.additionalCost) || 0
       };
+    }
+
+    // Process vendor and certification fields
+    if (vendor !== undefined) course.vendor = vendor;
+    if (certificationBody !== undefined) course.certificationBody = certificationBody;
+    if (certificationName !== undefined) course.certificationName = certificationName;
+
+    // Process course highlights
+    if (courseHighlights !== undefined) {
+      course.courseHighlights = Array.isArray(courseHighlights) ? courseHighlights.filter(highlight => highlight && highlight.trim()) : [];
     }
 
     await course.save();
