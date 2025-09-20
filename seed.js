@@ -28,14 +28,14 @@ const seedData = async () => {
     await Student.deleteMany({});
 
     // Create a sample admin user if it doesn't exist
-    let adminUser = await User.findOne({ email: 'admin@simplelearn.com' });
+    let adminUser = await User.findOne({ email: 'admin@cyberatrix.com' });
     if (!adminUser) {
       adminUser = new User({
-        email: 'admin@simplelearn.com',
+        email: 'admin@cyberatrix.com',
         password: 'admin123'
       });
       await adminUser.save();
-      console.log('Admin user created: admin@simplelearn.com / admin123');
+      console.log('Admin user created: admin@cyberatrix.com / admin123');
     }
 
     // Sample courses data
@@ -437,7 +437,7 @@ const seedData = async () => {
     console.log('\n=== SEED DATA SUMMARY ===');
     console.log(`✅ Courses created: ${createdCourses.length}`);
     console.log(`✅ Students created: ${createdStudents.length}`);
-    console.log(`✅ Admin user: admin@simplelearn.com / admin123`);
+    console.log(`✅ Admin user: admin@cyberatrix.com / admin123`);
     
     const totalRevenue = studentsData.reduce((sum, student) => sum + student.totalAmountPaid, 0);
     const totalCertificates = studentsData.reduce((sum, student) => sum + (student.certificates ? student.certificates.length : 0), 0);

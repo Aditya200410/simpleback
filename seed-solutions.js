@@ -336,10 +336,10 @@ const seedSolutions = async () => {
     console.log('Connected to MongoDB');
 
     // Find or create a default admin user
-    let adminUser = await User.findOne({ email: 'admin@simplelearn.com' });
+    let adminUser = await User.findOne({ email: 'admin@cyberatrix.com' });
     if (!adminUser) {
       adminUser = new User({
-        email: 'admin@simplelearn.com',
+        email: 'admin@cyberatrix.com',
         password: 'admin123', // This should be hashed in production
         role: 'admin'
       });

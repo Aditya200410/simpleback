@@ -58,7 +58,7 @@ const sendConfirmationEmail = async (enrollmentData, paymentData) => {
     const mailOptions = {
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
       to: enrollmentData.email,
-      subject: '🎉 Course Enrollment Confirmation - SimpleLearn',
+      subject: '🎉 Course Enrollment Confirmation - Cyberatrix',
       html: `
         <!DOCTYPE html>
         <html>
@@ -78,7 +78,7 @@ const sendConfirmationEmail = async (enrollmentData, paymentData) => {
           <div class="container">
             <div class="header">
               <h1>🎉 Enrollment Successful!</h1>
-              <p>Welcome to SimpleLearn</p>
+              <p>Welcome to Cyberatrix</p>
             </div>
             <div class="content">
               <div class="success-badge">✅ Payment Confirmed</div>
@@ -115,7 +115,7 @@ const sendConfirmationEmail = async (enrollmentData, paymentData) => {
               <p>If you have any questions, feel free to contact our support team.</p>
               
               <div class="footer">
-                <p>Thank you for choosing SimpleLearn!</p>
+                <p>Thank you for choosing Cyberatrix!</p>
                 <p>Happy Learning! 📖✨</p>
               </div>
             </div>

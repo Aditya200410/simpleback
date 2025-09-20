@@ -60,7 +60,7 @@ const seedCategories = async () => {
         const hashedPassword = await bcrypt.hash('admin123', 10);
         
         adminUser = new User({
-          email: 'admin@simplelearn.com',
+          email: 'admin@cyberatrix.com',
           password: hashedPassword,
           role: 'admin'
         });
