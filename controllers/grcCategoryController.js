@@ -109,15 +109,19 @@ const getGRCCategoryById = async (req, res) => {
 const updateGRCCategory = async (req, res) => {
   try {
     const { name, description, status } = req.body;
+    console.log('Updating GRC category:', req.params.id, { name, description, status });
 
     const category = await GRCCategory.findById(req.params.id);
 
     if (!category) {
+      console.log('GRC category not found:', req.params.id);
       return res.status(404).json({
         success: false,
         message: 'GRC category not found'
       });
     }
+
+    console.log('Found category:', category.name);
 
     // Check if new name already exists (excluding current category)
     if (name && name !== category.name) {
@@ -127,6 +131,7 @@ const updateGRCCategory = async (req, res) => {
       });
 
       if (existingCategory) {
+        console.log('Category name already exists:', name);
         return res.status(400).json({
           success: false,
           message: 'GRC category with this name already exists'
@@ -140,12 +145,13 @@ const updateGRCCategory = async (req, res) => {
     if (status) category.status = status;
 
     category.updatedBy = req.user.id;
-    await category.save();
+    const updatedCategory = await category.save();
+    console.log('GRC category updated successfully:', updatedCategory.name);
 
     res.json({
       success: true,
       message: 'GRC category updated successfully',
-      category
+      category: updatedCategory
     });
   } catch (error) {
     console.error('Update GRC category error:', error);
