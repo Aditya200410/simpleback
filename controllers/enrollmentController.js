@@ -3,7 +3,7 @@ const Course = require('../models/Course');
 const GRCService = require('../models/GRCService');
 const Solution = require('../models/Solution');
 const User = require('../models/User');
-const { sendEnrollmentConfirmation, sendAdminNotification, sendAdminReply } = require('../services/emailService');
+const { sendEnrollmentConfirmation, sendAdminNotification, sendAdminReply, sendRejectionEmail } = require('../services/emailService');
 
 // Create a new enrollment
 const createEnrollment = async (req, res) => {
@@ -314,7 +314,33 @@ const updateEnrollmentStatus = async (req, res) => {
       });
     }
 
-    // Update enrollment
+    // Handle rejection - delete enrollment and send rejection email
+    if (status === 'Rejected') {
+      // Send rejection email before deleting
+      try {
+        await sendRejectionEmail(enrollment);
+      } catch (emailError) {
+        console.error('Failed to send rejection email:', emailError);
+        // Continue with deletion even if email fails
+      }
+
+      // Delete the enrollment
+      await Enrollment.findByIdAndDelete(enrollmentId);
+
+      return res.json({
+        success: true,
+        message: 'Enrollment rejected and deleted successfully. Rejection email sent to student.',
+        deletedEnrollment: {
+          id: enrollment._id,
+          enrollmentId: enrollment.enrollmentId,
+          fullName: enrollment.fullName,
+          email: enrollment.email,
+          serviceName: enrollment.courseName || enrollment.grcServiceName || enrollment.solutionName
+        }
+      });
+    }
+
+    // Update enrollment for non-rejection statuses
     enrollment.status = status;
     if (notes) enrollment.notes = notes;
     if (status === 'Approved') enrollment.approvedBy = req.userId;

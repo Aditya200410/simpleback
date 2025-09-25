@@ -310,9 +310,71 @@ const sendAdminReply = async (enrollment, replyMessage, adminName) => {
   return await sendEmail(enrollment.email, template.subject, template.html);
 };
 
+// Send rejection email
+const sendRejectionEmail = async (enrollment) => {
+  const serviceName = enrollment.courseName || enrollment.grcServiceName || enrollment.solutionName;
+  const serviceType = enrollment.courseName ? 'course' : enrollment.grcServiceName ? 'GRC service' : 'solution';
+  
+  const subject = `Application Rejected - ${serviceName}`;
+  const html = `
+    <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h1 style="color: #dc3545;">Enrollment Application Rejected</h1>
+      </div>
+      <p>Dear ${enrollment.fullName},</p>
+      <p>Thank you for your interest in our ${serviceType}. After careful review, we regret to inform you that your application for <strong>${serviceName}</strong> has not been approved at this time.</p>
+      
+      <div style="background-color: #f8f9fa; border-left: 4px solid #dc3545; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <h3 style="color: #dc3545; margin-top: 0;">Application Details</h3>
+        <ul style="list-style-type: none; padding: 0;">
+          <li style="margin-bottom: 10px;"><strong>Application ID:</strong> ${enrollment.enrollmentId}</li>
+          <li style="margin-bottom: 10px;"><strong>Service:</strong> ${serviceName}</li>
+          <li style="margin-bottom: 10px;"><strong>Application Date:</strong> ${new Date(enrollment.enrollmentDate).toLocaleDateString()}</li>
+          <li style="margin-bottom: 10px;"><strong>Status:</strong> <span style="color: #dc3545; font-weight: bold;">Rejected</span></li>
+        </ul>
+      </div>
+
+      <div style="background-color: #e9ecef; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <h3 style="color: #495057; margin-top: 0;">Why was my application rejected?</h3>
+        <p>Applications may be rejected for various reasons including:</p>
+        <ul>
+          <li>Incomplete or inaccurate information provided</li>
+          <li>Not meeting the required qualifications or prerequisites</li>
+          <li>Limited availability or capacity constraints</li>
+          <li>Specific requirements not being met for this particular ${serviceType}</li>
+        </ul>
+      </div>
+
+      <div style="background-color: #d1ecf1; padding: 15px; margin: 20px 0; border-radius: 4px;">
+        <h3 style="color: #0c5460; margin-top: 0;">What can I do next?</h3>
+        <ul>
+          <li><strong>Reapply:</strong> You may submit a new application after addressing any issues</li>
+          <li><strong>Contact Us:</strong> Reach out to our team for specific feedback on your application</li>
+          <li><strong>Explore Alternatives:</strong> Consider other courses or services that might be a better fit</li>
+          <li><strong>Improve Qualifications:</strong> Work on meeting the required prerequisites and reapply later</li>
+        </ul>
+      </div>
+
+      <p>We encourage you to review our other offerings and consider reapplying in the future. Our team is here to help you find the right learning path.</p>
+      
+      <p>If you have any questions about this decision or would like to discuss alternative options, please don't hesitate to contact us.</p>
+      
+      <p>Best regards,</p>
+      <p>The Cyberatrix Solutions Team</p>
+      
+      <div style="text-align: center; margin-top: 20px; font-size: 0.8em; color: #777;">
+        <p>&copy; ${new Date().getFullYear()} Cyberatrix Solutions. All rights reserved.</p>
+      </div>
+    </div>
+  `;
+  
+  return await sendEmail(enrollment.email, subject, html);
+};
+
 module.exports = {
   sendEmail,
   sendEnrollmentConfirmation,
   sendAdminNotification,
-  sendAdminReply
+  sendAdminReply,
+  sendRejectionEmail
 };

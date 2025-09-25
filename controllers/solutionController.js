@@ -4,15 +4,12 @@ const Solution = require('../models/Solution');
 const createSolution = async (req, res) => {
   try {
     const { 
-      solutionName, 
+      title, 
       category, 
-      description, 
-      detailedDescription,
       shortDescription,
+      detailedDescription,
       icon,
-      price, 
       duration,
-      complexity,
       features,
       benefits,
       process,
@@ -21,28 +18,23 @@ const createSolution = async (req, res) => {
       pricing,
       industry,
       compliance,
-      faq,
+      faqs,
       caseStudies,
-      relatedSolutions,
-      targetAudience,
-      providerName,
-      providerBio,
-      providerExperience,
-      providerQualifications,
+      relatedServices,
       isActive,
       priority
     } = req.body;
 
     // Validate required fields
-    if (!solutionName || !category || !description || !price || !duration || !complexity) {
+    if (!title || !category || !shortDescription || !detailedDescription || !duration) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields: solutionName, category, description, price, duration, complexity'
+        message: 'Required fields: title, category, shortDescription, detailedDescription, duration'
       });
     }
 
-    // Generate slug from solutionName
-    const slug = solutionName
+    // Generate slug from title
+    const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
@@ -72,9 +64,9 @@ const createSolution = async (req, res) => {
     }
 
     // Process FAQ array
-    let processedFAQ = [];
-    if (faq && Array.isArray(faq)) {
-      processedFAQ = faq.filter(item => item.question && item.answer);
+    let processedFAQs = [];
+    if (faqs && Array.isArray(faqs)) {
+      processedFAQs = faqs.filter(item => item.question && item.answer);
     }
 
     // Process benefits array
@@ -119,24 +111,21 @@ const createSolution = async (req, res) => {
       processedCaseStudies = caseStudies.filter(study => study.title && study.description);
     }
 
-    // Process related solutions array
-    let processedRelatedSolutions = [];
-    if (relatedSolutions && Array.isArray(relatedSolutions)) {
-      processedRelatedSolutions = relatedSolutions.filter(id => id);
+    // Process related services array
+    let processedRelatedServices = [];
+    if (relatedServices && Array.isArray(relatedServices)) {
+      processedRelatedServices = relatedServices.filter(id => id);
     }
 
     // Create new solution
     const solution = new Solution({
-      solutionName,
+      title,
       slug: finalSlug,
       category,
-      description,
-      detailedDescription,
       shortDescription,
-      icon: icon || '🚀',
-      price,
+      detailedDescription,
+      icon: icon || '🛡️',
       duration,
-      complexity,
       features: processedFeatures,
       benefits: processedBenefits,
       process: processedProcess,
@@ -145,14 +134,9 @@ const createSolution = async (req, res) => {
       pricing,
       industry: processedIndustry,
       compliance: processedCompliance,
-      faq: processedFAQ,
+      faqs: processedFAQs,
       caseStudies: processedCaseStudies,
-      relatedSolutions: processedRelatedSolutions,
-      targetAudience,
-      providerName,
-      providerBio,
-      providerExperience,
-      providerQualifications,
+      relatedServices: processedRelatedServices,
       isActive: isActive !== undefined ? isActive : true,
       priority: priority || 0,
       createdBy: req.userId
