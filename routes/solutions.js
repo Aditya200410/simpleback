@@ -1,5 +1,5 @@
 const express = require('express');
-const { createSolution, getAllSolutions, getSolutionById, updateSolution, deleteSolution } = require('../controllers/solutionController');
+const { createSolution, getAllSolutions, getSolutionById, getSolutionBySlug, updateSolution, deleteSolution } = require('../controllers/solutionController');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -14,6 +14,11 @@ router.get('/public', getAllSolutions);
 // @desc    Get solution by ID (public access)
 // @access  Public
 router.get('/public/:id', getSolutionById);
+
+// @route   GET /api/solutions/public/slug/:slug
+// @desc    Get solution by slug (public access)
+// @access  Public
+router.get('/public/slug/:slug', getSolutionBySlug);
 
 // Private routes (authentication required)
 router.use(auth);

@@ -1,6 +1,36 @@
 const Course = require('../models/Course');
 const Student = require('../models/Student');
 
+// Utility function to generate slug from course name
+const generateSlug = (courseName) => {
+  return courseName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+    .replace(/\s+/g, '-') // Replace spaces with hyphens
+    .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+    .trim('-'); // Remove leading/trailing hyphens
+};
+
+// Utility function to ensure unique slug
+const ensureUniqueSlug = async (baseSlug, excludeId = null) => {
+  let slug = baseSlug;
+  let counter = 1;
+  
+  while (true) {
+    const existingCourse = await Course.findOne({ 
+      slug: slug,
+      ...(excludeId && { _id: { $ne: excludeId } })
+    });
+    
+    if (!existingCourse) {
+      return slug;
+    }
+    
+    slug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+};
+
 // Create a new course
 const createCourse = async (req, res) => {
   try {
@@ -155,9 +185,14 @@ const createCourse = async (req, res) => {
       processedCourseHighlights = courseHighlights.filter(highlight => highlight && highlight.trim());
     }
 
+    // Generate unique slug
+    const baseSlug = generateSlug(courseName);
+    const uniqueSlug = await ensureUniqueSlug(baseSlug);
+
     // Create new course
     const course = new Course({
       courseName,
+      slug: uniqueSlug,
       category,
       description,
       amount,
@@ -248,6 +283,32 @@ const getCourseById = async (req, res) => {
   }
 };
 
+// Get course by slug
+const getCourseBySlug = async (req, res) => {
+  try {
+    const course = await Course.findOne({ slug: req.params.slug })
+      .populate('createdBy', 'email');
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      course
+    });
+  } catch (error) {
+    console.error('Get course by slug error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch course'
+    });
+  }
+};
+
 // Update course
 const updateCourse = async (req, res) => {
   try {
@@ -290,7 +351,12 @@ const updateCourse = async (req, res) => {
     }
 
     // Update fields
-    if (courseName) course.courseName = courseName;
+    if (courseName) {
+      course.courseName = courseName;
+      // Generate new slug if course name changed
+      const baseSlug = generateSlug(courseName);
+      course.slug = await ensureUniqueSlug(baseSlug, req.params.id);
+    }
     if (category) course.category = category;
     if (description) course.description = description;
     if (amount) course.amount = amount;
@@ -507,6 +573,7 @@ module.exports = {
   createCourse,
   getAllCourses,
   getCourseById,
+  getCourseBySlug,
   updateCourse,
   deleteCourse,
   searchCourses

@@ -7,14 +7,30 @@ const createSolution = async (req, res) => {
       solutionName, 
       category, 
       description, 
+      detailedDescription,
+      shortDescription,
+      icon,
       price, 
       duration,
-      shortDescription,
       complexity,
       features,
-      targetAudience,
+      benefits,
+      process,
+      requirements,
       deliverables,
-      faq
+      pricing,
+      industry,
+      compliance,
+      faq,
+      caseStudies,
+      relatedSolutions,
+      targetAudience,
+      providerName,
+      providerBio,
+      providerExperience,
+      providerQualifications,
+      isActive,
+      priority
     } = req.body;
 
     // Validate required fields
@@ -23,6 +39,20 @@ const createSolution = async (req, res) => {
         success: false,
         message: 'Required fields: solutionName, category, description, price, duration, complexity'
       });
+    }
+
+    // Generate slug from solutionName
+    const slug = solutionName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+    // Check if slug already exists
+    let finalSlug = slug;
+    let counter = 1;
+    while (await Solution.findOne({ slug: finalSlug })) {
+      finalSlug = `${slug}-${counter}`;
+      counter++;
     }
 
     // Process features array
@@ -47,19 +77,84 @@ const createSolution = async (req, res) => {
       processedFAQ = faq.filter(item => item.question && item.answer);
     }
 
+    // Process benefits array
+    let processedBenefits = [];
+    if (benefits && Array.isArray(benefits)) {
+      processedBenefits = benefits.filter(benefit => benefit.title && benefit.description);
+    }
+
+    // Process process array
+    let processedProcess = [];
+    if (process && Array.isArray(process)) {
+      processedProcess = process.filter(step => step.step && step.title && step.description);
+    }
+
+    // Process industry array
+    let processedIndustry = [];
+    if (industry) {
+      processedIndustry = Array.isArray(industry) 
+        ? industry.filter(item => item && item.trim())
+        : industry.split(',').map(item => item.trim()).filter(item => item);
+    }
+
+    // Process compliance array
+    let processedCompliance = [];
+    if (compliance) {
+      processedCompliance = Array.isArray(compliance) 
+        ? compliance.filter(item => item && item.trim())
+        : compliance.split(',').map(item => item.trim()).filter(item => item);
+    }
+
+    // Process requirements array
+    let processedRequirements = [];
+    if (requirements) {
+      processedRequirements = Array.isArray(requirements) 
+        ? requirements.filter(item => item && item.trim())
+        : requirements.split(',').map(item => item.trim()).filter(item => item);
+    }
+
+    // Process case studies array
+    let processedCaseStudies = [];
+    if (caseStudies && Array.isArray(caseStudies)) {
+      processedCaseStudies = caseStudies.filter(study => study.title && study.description);
+    }
+
+    // Process related solutions array
+    let processedRelatedSolutions = [];
+    if (relatedSolutions && Array.isArray(relatedSolutions)) {
+      processedRelatedSolutions = relatedSolutions.filter(id => id);
+    }
+
     // Create new solution
     const solution = new Solution({
       solutionName,
+      slug: finalSlug,
       category,
       description,
+      detailedDescription,
+      shortDescription,
+      icon: icon || '🚀',
       price,
       duration,
-      shortDescription,
       complexity,
       features: processedFeatures,
-      targetAudience,
+      benefits: processedBenefits,
+      process: processedProcess,
+      requirements: processedRequirements,
       deliverables: processedDeliverables,
+      pricing,
+      industry: processedIndustry,
+      compliance: processedCompliance,
       faq: processedFAQ,
+      caseStudies: processedCaseStudies,
+      relatedSolutions: processedRelatedSolutions,
+      targetAudience,
+      providerName,
+      providerBio,
+      providerExperience,
+      providerQualifications,
+      isActive: isActive !== undefined ? isActive : true,
+      priority: priority || 0,
       createdBy: req.userId
     });
 
@@ -119,6 +214,33 @@ const getSolutionById = async (req, res) => {
     });
   } catch (error) {
     console.error('Get solution error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch solution'
+    });
+  }
+};
+
+// Get solution by slug
+const getSolutionBySlug = async (req, res) => {
+  try {
+    const solution = await Solution.findOne({ slug: req.params.slug })
+      .populate('createdBy', 'email')
+      .populate('relatedSolutions', 'solutionName slug shortDescription icon');
+
+    if (!solution) {
+      return res.status(404).json({
+        success: false,
+        message: 'Solution not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: solution
+    });
+  } catch (error) {
+    console.error('Get solution by slug error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch solution'
@@ -230,6 +352,7 @@ module.exports = {
   createSolution,
   getAllSolutions,
   getSolutionById,
+  getSolutionBySlug,
   updateSolution,
   deleteSolution
 };

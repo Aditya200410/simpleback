@@ -157,22 +157,6 @@ Our implementation process is designed to be efficient and minimally disruptive 
         answer: 'After certification, you\'ll need to maintain your ISMS through regular internal audits, management reviews, and continuous improvement. We provide 12 months of post-certification support to help you maintain compliance.'
       }
     ],
-    testimonials: [
-      {
-        name: 'Sarah Johnson',
-        company: 'TechCorp Solutions',
-        position: 'CISO',
-        content: 'The ISO 27001 implementation was seamless and professional. The team understood our complex IT environment and helped us achieve certification in just 5 months.',
-        rating: 5
-      },
-      {
-        name: 'Michael Chen',
-        company: 'HealthFirst Medical',
-        position: 'IT Director',
-        content: 'Excellent guidance throughout the process. The documentation was comprehensive and the training was very effective. Highly recommended!',
-        rating: 5
-      }
-    ],
     caseStudies: [
       {
         title: 'Healthcare Provider Achieves ISO 27001 in 4 Months',
@@ -328,15 +312,6 @@ Our approach is practical and business-focused, ensuring that security controls 
       {
         question: 'What happens if we fail a PCI DSS assessment?',
         answer: 'If you fail an assessment, you\'ll receive a detailed report of non-compliant areas. You\'ll need to remediate these issues and undergo a re-assessment. Payment card brands may impose fines for non-compliance.'
-      }
-    ],
-    testimonials: [
-      {
-        name: 'David Rodriguez',
-        company: 'E-Commerce Plus',
-        position: 'CTO',
-        content: 'The PCI DSS implementation was thorough and professional. We achieved Level 1 compliance and our customers feel more confident about shopping with us.',
-        rating: 5
       }
     ],
     caseStudies: [

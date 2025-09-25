@@ -7,6 +7,13 @@ const courseSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Course name cannot exceed 100 characters']
   },
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
   category: {
     type: String,
     required: [true, 'Category is required'],
@@ -365,5 +372,6 @@ courseSchema.index({ status: 1 });
 courseSchema.index({ startDate: 1 });
 courseSchema.index({ level: 1 });
 courseSchema.index({ averageRating: -1 });
+courseSchema.index({ slug: 1 });
 
 module.exports = mongoose.model('Course', courseSchema);

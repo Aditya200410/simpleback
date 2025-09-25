@@ -81,13 +81,6 @@ const grcServiceSchema = new mongoose.Schema({
     question: String,
     answer: String
   }],
-  testimonials: [{
-    name: String,
-    company: String,
-    position: String,
-    content: String,
-    rating: Number
-  }],
   caseStudies: [{
     title: String,
     description: String,

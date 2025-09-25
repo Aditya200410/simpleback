@@ -120,7 +120,6 @@ const createGRCService = async (req, res) => {
       industry,
       compliance,
       faqs,
-      testimonials,
       caseStudies,
       relatedServices,
       priority
@@ -161,7 +160,6 @@ const createGRCService = async (req, res) => {
       industry: industry || [],
       compliance: compliance || [],
       faqs: faqs || [],
-      testimonials: testimonials || [],
       caseStudies: caseStudies || [],
       relatedServices: relatedServices || [],
       priority: priority || 0,
@@ -208,7 +206,6 @@ const updateGRCService = async (req, res) => {
       industry,
       compliance,
       faqs,
-      testimonials,
       caseStudies,
       relatedServices,
       priority, 
@@ -244,7 +241,6 @@ const updateGRCService = async (req, res) => {
     if (industry && Array.isArray(industry)) service.industry = industry;
     if (compliance && Array.isArray(compliance)) service.compliance = compliance;
     if (faqs && Array.isArray(faqs)) service.faqs = faqs;
-    if (testimonials && Array.isArray(testimonials)) service.testimonials = testimonials;
     if (caseStudies && Array.isArray(caseStudies)) service.caseStudies = caseStudies;
     if (relatedServices && Array.isArray(relatedServices)) service.relatedServices = relatedServices;
     if (priority !== undefined) service.priority = priority;
