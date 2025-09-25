@@ -25,18 +25,43 @@ const enrollmentSchema = new mongoose.Schema({
   // Course Information
   courseId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Course',
-    required: [true, 'Course ID is required']
+    ref: 'Course'
   },
   courseName: {
     type: String,
-    required: [true, 'Course name is required'],
     trim: true
   },
   courseAmount: {
     type: Number,
-    required: [true, 'Course amount is required'],
     min: [0, 'Course amount must be positive']
+  },
+
+  // GRC Service Information
+  grcServiceId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'GRCService'
+  },
+  grcServiceName: {
+    type: String,
+    trim: true
+  },
+  grcServiceAmount: {
+    type: Number,
+    min: [0, 'GRC service amount must be positive']
+  },
+
+  // Solution Information
+  solutionId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Solution'
+  },
+  solutionName: {
+    type: String,
+    trim: true
+  },
+  solutionAmount: {
+    type: Number,
+    min: [0, 'Solution amount must be positive']
   },
 
   // Batch Information
@@ -61,7 +86,7 @@ const enrollmentSchema = new mongoose.Schema({
   },
   enrollmentType: {
     type: String,
-    enum: ['online', 'offline', 'corporate'],
+    enum: ['online', 'offline', 'corporate', 'grc-service', 'solution'],
     default: 'online'
   },
 
@@ -184,8 +209,28 @@ enrollmentSchema.virtual('isActive').get(function() {
   return ['Approved', 'Completed'].includes(this.status);
 });
 
-// Pre-save middleware to set approval date
+// Pre-save middleware to set approval date and validate service type
 enrollmentSchema.pre('save', function(next) {
+  // Validate that at least one service type is selected
+  const hasCourse = this.courseId && this.courseName;
+  const hasGRCService = this.grcServiceId && this.grcServiceName;
+  const hasSolution = this.solutionId && this.solutionName;
+  
+  if (!hasCourse && !hasGRCService && !hasSolution) {
+    return next(new Error('At least one service type (course, GRC service, or solution) must be selected'));
+  }
+  
+  // Set the appropriate amount based on service type
+  if (hasCourse && !this.courseAmount) {
+    this.courseAmount = 0;
+  }
+  if (hasGRCService && !this.grcServiceAmount) {
+    this.grcServiceAmount = 0;
+  }
+  if (hasSolution && !this.solutionAmount) {
+    this.solutionAmount = 0;
+  }
+  
   if (this.isModified('status') && this.status === 'Approved' && !this.approvedDate) {
     this.approvedDate = new Date();
   }

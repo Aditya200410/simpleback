@@ -1,12 +1,14 @@
 const express = require('express');
 const {
   createEnrollment,
+  createGRCServiceEnrollment,
   getAllEnrollments,
   getEnrollmentById,
   updateEnrollmentStatus,
   updateEnrollmentProgress,
   generateCertificate,
   getEnrollmentStats,
+  sendEmailReply,
   deleteEnrollment
 } = require('../controllers/enrollmentController');
 const { auth } = require('../middleware/auth');
@@ -18,6 +20,11 @@ const router = express.Router();
 // @desc    Create a new enrollment (public access)
 // @access  Public
 router.post('/public', createEnrollment);
+
+// @route   POST /api/enrollments/grc-service
+// @desc    Create a new GRC service enrollment (public access)
+// @access  Public
+router.post('/grc-service', createGRCServiceEnrollment);
 
 // Private routes (authentication required)
 router.use(auth);
@@ -51,6 +58,11 @@ router.put('/:id/progress', updateEnrollmentProgress);
 // @desc    Generate certificate for completed enrollment
 // @access  Private (Admin)
 router.post('/:id/certificate', generateCertificate);
+
+// @route   POST /api/enrollments/:id/reply
+// @desc    Send email reply to student
+// @access  Private (Admin)
+router.post('/:id/reply', sendEmailReply);
 
 // @route   DELETE /api/enrollments/:id
 // @desc    Delete enrollment

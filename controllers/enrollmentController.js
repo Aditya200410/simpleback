@@ -1,5 +1,9 @@
 const Enrollment = require('../models/Enrollment');
 const Course = require('../models/Course');
+const GRCService = require('../models/GRCService');
+const Solution = require('../models/Solution');
+const User = require('../models/User');
+const { sendEnrollmentConfirmation, sendAdminNotification, sendAdminReply } = require('../services/emailService');
 
 // Create a new enrollment
 const createEnrollment = async (req, res) => {
@@ -11,9 +15,13 @@ const createEnrollment = async (req, res) => {
       courseId,
       courseName,
       courseAmount,
+      grcServiceId,
+      grcServiceName,
+      grcServiceAmount,
+      solutionId,
+      solutionName,
+      solutionAmount,
       experience,
-      motivation,
-      learningGoals,
       preferredStartDate,
       howDidYouHear,
       batchId,
@@ -24,51 +32,95 @@ const createEnrollment = async (req, res) => {
       enrollmentType
     } = req.body;
 
-    // Validate required fields
-    if (!fullName || !email || !phone || !courseId || !courseName) {
+    // Determine service type
+    const hasCourse = courseId && courseName;
+    const hasGRCService = grcServiceId && grcServiceName;
+    const hasSolution = solutionId && solutionName;
+
+    // Validate required fields based on service type
+    if (!fullName || !email || !phone) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields: fullName, email, phone, courseId, courseName'
+        message: 'Required fields: fullName, email, phone'
       });
     }
 
-    // Check if course exists
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Course not found'
-      });
-    }
-
-    // Check if user is already enrolled in this course
-    const existingEnrollment = await Enrollment.findOne({ email, courseId });
-    if (existingEnrollment) {
+    if (!hasCourse && !hasGRCService && !hasSolution) {
       return res.status(400).json({
         success: false,
-        message: 'You are already enrolled in this course'
+        message: 'Required fields: courseId/courseName, grcServiceId/grcServiceName, or solutionId/solutionName'
       });
     }
 
-    // If batch information is provided, validate it
-    if (batchId && course.batches && course.batches.length > 0) {
-      const selectedBatch = course.batches.find(batch => 
-        batch.batchName === batchName || batch._id.toString() === batchId
-      );
-      
-      if (!selectedBatch) {
-        return res.status(400).json({
+    // Check if service exists
+    let service = null;
+    if (hasCourse) {
+      service = await Course.findById(courseId);
+      if (!service) {
+        return res.status(404).json({
           success: false,
-          message: 'Selected batch not found for this course'
+          message: 'Course not found'
         });
       }
-
-      // Check if batch has available capacity
-      if (selectedBatch.enrolledStudents >= selectedBatch.maxStudents) {
-        return res.status(400).json({
+    } else if (hasGRCService) {
+      const GRCService = require('../models/GRCService');
+      service = await GRCService.findById(grcServiceId);
+      if (!service) {
+        return res.status(404).json({
           success: false,
-          message: 'Selected batch is full. Please choose another batch.'
+          message: 'GRC service not found'
         });
+      }
+    } else if (hasSolution) {
+      const Solution = require('../models/Solution');
+      service = await Solution.findById(solutionId);
+      if (!service) {
+        return res.status(404).json({
+          success: false,
+          message: 'Solution not found'
+        });
+      }
+    }
+
+    // Check if user is already enrolled in this service
+    let existingEnrollment = null;
+    if (hasCourse) {
+      existingEnrollment = await Enrollment.findOne({ email, courseId });
+    } else if (hasGRCService) {
+      existingEnrollment = await Enrollment.findOne({ email, grcServiceId });
+    } else if (hasSolution) {
+      existingEnrollment = await Enrollment.findOne({ email, solutionId });
+    }
+
+    if (existingEnrollment) {
+      const serviceType = hasCourse ? 'course' : hasGRCService ? 'GRC service' : 'solution';
+      return res.status(400).json({
+        success: false,
+        message: `You have already requested this ${serviceType}`
+      });
+    }
+
+    // If batch information is provided for courses, validate it
+    if (hasCourse && batchId) {
+      if (service && service.batches && service.batches.length > 0) {
+        const selectedBatch = service.batches.find(batch => 
+          batch.batchName === batchName || batch._id.toString() === batchId
+        );
+        
+        if (!selectedBatch) {
+          return res.status(400).json({
+            success: false,
+            message: 'Selected batch not found for this course'
+          });
+        }
+
+        // Check if batch has available capacity
+        if (selectedBatch.enrolledStudents >= selectedBatch.maxStudents) {
+          return res.status(400).json({
+            success: false,
+            message: 'Selected batch is full. Please choose another batch.'
+          });
+        }
       }
     }
 
@@ -76,14 +128,26 @@ const createEnrollment = async (req, res) => {
     const ipAddress = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent');
 
-    // Determine course amount based on enrollment type
-    let finalCourseAmount = courseAmount;
-    if (enrollmentType && course.pricing && course.pricing[enrollmentType]) {
-      finalCourseAmount = course.pricing[enrollmentType].amount;
-    } else if (courseAmount !== undefined) {
-      finalCourseAmount = courseAmount;
-    } else {
-      finalCourseAmount = course.amount;
+    // Determine final amount and payment status based on service type
+    let finalAmount = serviceAmount;
+    let paymentStatus = 'Pending';
+    let status = 'Pending';
+
+    if (hasCourse) {
+      const course = await Course.findById(courseId);
+      if (enrollmentType && course.pricing && course.pricing[enrollmentType]) {
+        finalAmount = course.pricing[enrollmentType].amount;
+      }
+    }
+
+    // For GRC services and solutions, always set to pending for admin review
+    if (hasGRCService || hasSolution) {
+      status = 'Pending';
+      paymentStatus = 'Pending';
+    } else if (finalAmount === 0) {
+      // Auto-approve free courses
+      status = 'Approved';
+      paymentStatus = 'Free';
     }
 
     // Create new enrollment
@@ -91,12 +155,11 @@ const createEnrollment = async (req, res) => {
       fullName,
       email,
       phone,
-      courseId,
-      courseName,
-      courseAmount: finalCourseAmount,
+      ...serviceDetails,
+      courseAmount: hasCourse ? finalAmount : undefined,
+      grcServiceAmount: hasGRCService ? finalAmount : undefined,
+      solutionAmount: hasSolution ? finalAmount : undefined,
       experience: experience || 'Beginner',
-      motivation,
-      learningGoals,
       preferredStartDate: preferredStartDate ? new Date(preferredStartDate) : undefined,
       howDidYouHear,
       batchId,
@@ -104,34 +167,62 @@ const createEnrollment = async (req, res) => {
       batchStartDate: batchStartDate ? new Date(batchStartDate) : undefined,
       batchEndDate: batchEndDate ? new Date(batchEndDate) : undefined,
       batchStatus: batchStatus || 'Upcoming',
-      enrollmentType: enrollmentType || 'online',
+      enrollmentType: enrollmentType || (hasCourse ? 'online' : hasGRCService ? 'grc-service' : 'solution'),
       ipAddress,
       userAgent,
-      status: finalCourseAmount === 0 ? 'Approved' : 'Pending', // Auto-approve free courses
-      paymentStatus: finalCourseAmount === 0 ? 'Free' : 'Pending'
+      status,
+      paymentStatus
     });
 
     await enrollment.save();
 
-    // Update course enrollment count
-    await Course.findByIdAndUpdate(courseId, {
-      $inc: { enrolledStudents: 1 }
-    });
+    // Update service enrollment count
+    if (hasCourse) {
+      await Course.findByIdAndUpdate(courseId, {
+        $inc: { enrolledStudents: 1 }
+      });
 
-    // Update batch enrollment count if batch is specified
-    if (batchId && course.batches && course.batches.length > 0) {
-      const batchIndex = course.batches.findIndex(batch => 
-        batch.batchName === batchName || batch._id.toString() === batchId
-      );
-      
-      if (batchIndex !== -1) {
-        course.batches[batchIndex].enrolledStudents = (course.batches[batchIndex].enrolledStudents || 0) + 1;
-        await course.save();
+      // Update batch enrollment count if batch is specified
+      if (batchId && service && service.batches && service.batches.length > 0) {
+        const batchIndex = service.batches.findIndex(batch => 
+          batch.batchName === batchName || batch._id.toString() === batchId
+        );
+        
+        if (batchIndex !== -1) {
+          service.batches[batchIndex].enrolledStudents = (service.batches[batchIndex].enrolledStudents || 0) + 1;
+          await service.save();
+        }
       }
     }
 
-    // Populate course details
-    await enrollment.populate('courseId', 'courseName category level totalHours');
+    // Populate service details
+    if (hasCourse) {
+      await enrollment.populate('courseId', 'courseName category level totalHours');
+    } else if (hasGRCService) {
+      await enrollment.populate('grcServiceId', 'title category shortDescription');
+    } else if (hasSolution) {
+      await enrollment.populate('solutionId', 'solutionName category description');
+    }
+
+    // Send confirmation email to student
+    try {
+      await sendEnrollmentConfirmation(enrollment);
+    } catch (emailError) {
+      console.error('Failed to send enrollment confirmation email:', emailError);
+      // Don't fail the enrollment if email fails
+    }
+
+    // Send notification email to admin
+    try {
+      await sendAdminNotification(enrollment);
+    } catch (emailError) {
+      console.error('Failed to send admin notification email:', emailError);
+      // Don't fail the enrollment if email fails
+    }
+
+    // Determine service name and amount for response
+    const serviceName = enrollment.courseName || enrollment.grcServiceName || enrollment.solutionName;
+    const serviceAmount = enrollment.courseAmount || enrollment.grcServiceAmount || enrollment.solutionAmount;
 
     res.status(201).json({
       success: true,
@@ -141,14 +232,14 @@ const createEnrollment = async (req, res) => {
         enrollmentId: enrollment.enrollmentId,
         fullName: enrollment.fullName,
         email: enrollment.email,
-        courseName: enrollment.courseName,
+        serviceName,
+        serviceAmount,
         batchName: enrollment.batchName,
         batchStatus: enrollment.batchStatus,
         enrollmentType: enrollment.enrollmentType,
         status: enrollment.status,
         paymentStatus: enrollment.paymentStatus,
-        enrollmentDate: enrollment.enrollmentDate,
-        courseAmount: enrollment.courseAmount
+        enrollmentDate: enrollment.enrollmentDate
       }
     });
   } catch (error) {
@@ -443,6 +534,68 @@ const getEnrollmentStats = async (req, res) => {
   }
 };
 
+// Send email reply to student (admin only)
+const sendEmailReply = async (req, res) => {
+  try {
+    const { replyMessage } = req.body;
+    const enrollmentId = req.params.id;
+
+    if (!replyMessage || replyMessage.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Reply message is required'
+      });
+    }
+
+    const enrollment = await Enrollment.findById(enrollmentId);
+    if (!enrollment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Enrollment not found'
+      });
+    }
+
+    // Get admin user details
+    const admin = await User.findById(req.userId);
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: 'Admin user not found'
+      });
+    }
+
+    // Send email reply
+    const emailResult = await sendAdminReply(enrollment, replyMessage, admin.email);
+
+    if (!emailResult.success) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to send email reply',
+        error: emailResult.error
+      });
+    }
+
+    // Update enrollment with admin notes
+    enrollment.notes = enrollment.notes ? 
+      `${enrollment.notes}\n\nAdmin Reply (${new Date().toLocaleDateString()}): ${replyMessage}` : 
+      `Admin Reply (${new Date().toLocaleDateString()}): ${replyMessage}`;
+    
+    await enrollment.save();
+
+    res.json({
+      success: true,
+      message: 'Email reply sent successfully',
+      emailId: emailResult.messageId
+    });
+  } catch (error) {
+    console.error('Send email reply error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to send email reply'
+    });
+  }
+};
+
 // Delete enrollment (admin only)
 const deleteEnrollment = async (req, res) => {
   try {
@@ -483,13 +636,153 @@ const deleteEnrollment = async (req, res) => {
   }
 };
 
+// Create GRC service enrollment
+const createGRCServiceEnrollment = async (req, res) => {
+  try {
+    console.log('GRC Service Enrollment Request Body:', req.body);
+    
+    const {
+      fullName,
+      email,
+      phone,
+      grcServiceId,
+      grcServiceName,
+      grcServiceAmount,
+      motivation,
+      learningGoals,
+      preferredStartDate,
+      howDidYouHear
+    } = req.body;
+
+    // Validate required fields
+    if (!fullName || !email || !phone || !grcServiceId || !grcServiceName) {
+      console.log('Missing required fields:', { fullName, email, phone, grcServiceId, grcServiceName });
+      return res.status(400).json({
+        success: false,
+        message: 'Required fields: fullName, email, phone, grcServiceId, grcServiceName'
+      });
+    }
+
+    // Check if GRC service exists
+    const grcService = await GRCService.findById(grcServiceId);
+    if (!grcService) {
+      return res.status(404).json({
+        success: false,
+        message: 'GRC service not found'
+      });
+    }
+
+    // Check if user has already requested this GRC service
+    const existingEnrollment = await Enrollment.findOne({ email, grcServiceId });
+    if (existingEnrollment) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already requested this GRC service'
+      });
+    }
+
+    // Get client information
+    const ipAddress = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('User-Agent');
+
+    // Create new GRC service enrollment
+    const enrollment = new Enrollment({
+      fullName,
+      email,
+      phone,
+      grcServiceId,
+      grcServiceName,
+      grcServiceAmount: grcServiceAmount || grcService.pricing?.startingFrom || 0,
+      motivation,
+      learningGoals,
+      preferredStartDate: preferredStartDate ? new Date(preferredStartDate) : undefined,
+      howDidYouHear,
+      enrollmentType: 'grc-service',
+      ipAddress,
+      userAgent,
+      status: 'Pending', // Always pending for admin review
+      paymentStatus: 'Pending'
+    });
+
+    try {
+      await enrollment.save();
+    } catch (saveError) {
+      console.error('Enrollment save error:', saveError);
+      return res.status(400).json({
+        success: false,
+        message: saveError.message || 'Failed to save enrollment'
+      });
+    }
+
+    // Populate GRC service details
+    await enrollment.populate('grcServiceId', 'title category shortDescription');
+
+    // Send confirmation email to student (optional)
+    try {
+      await sendEnrollmentConfirmation(enrollment);
+    } catch (emailError) {
+      console.error('Failed to send enrollment confirmation email:', emailError);
+      // Don't fail the enrollment if email fails
+    }
+
+    // Send notification email to admin (optional)
+    try {
+      await sendAdminNotification(enrollment);
+    } catch (emailError) {
+      console.error('Failed to send admin notification email:', emailError);
+      // Don't fail the enrollment if email fails
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'GRC service request submitted successfully',
+      enrollment: {
+        id: enrollment._id,
+        enrollmentId: enrollment.enrollmentId,
+        fullName: enrollment.fullName,
+        email: enrollment.email,
+        serviceName: enrollment.grcServiceName,
+        serviceAmount: enrollment.grcServiceAmount,
+        enrollmentType: enrollment.enrollmentType,
+        status: enrollment.status,
+        paymentStatus: enrollment.paymentStatus,
+        enrollmentDate: enrollment.enrollmentDate
+      }
+    });
+  } catch (error) {
+    console.error('Create GRC service enrollment error:', error);
+    
+    // Handle specific error types
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error: ' + error.message
+      });
+    }
+    
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid data format'
+      });
+    }
+    
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to create GRC service enrollment'
+    });
+  }
+};
+
 module.exports = {
   createEnrollment,
+  createGRCServiceEnrollment,
   getAllEnrollments,
   getEnrollmentById,
   updateEnrollmentStatus,
   updateEnrollmentProgress,
   generateCertificate,
   getEnrollmentStats,
+  sendEmailReply,
   deleteEnrollment
 };
