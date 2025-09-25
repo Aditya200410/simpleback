@@ -93,7 +93,7 @@ const courseSchema = new mongoose.Schema({
   },
   level: {
     type: String,
-    enum: ['Beginner', 'Intermediate', 'Advanced'],
+    enum: ['Beginner', 'Intermediate', 'Advanced', 'Professional'],
     required: [true, 'Course level is required']
   },
   skillsYouWillLearn: [{
@@ -222,7 +222,7 @@ const courseSchema = new mongoose.Schema({
   examDetails: {
     examFormat: {
       type: String,
-      enum: ['Multiple Choice', 'Practical', 'Essay', 'Mixed', 'Online', 'Offline'],
+      enum: ['Multiple Choice', 'Practical', 'Essay', 'Mixed', 'Online', 'Offline', 'Hands-on labs + CTF score + 1-on-1 interview'],
       default: 'Multiple Choice'
     },
     examDuration: {
@@ -306,7 +306,7 @@ const courseSchema = new mongoose.Schema({
   },
   learningMode: {
     type: [String],
-    enum: ['Live Online', 'Self-Paced', 'Classroom', 'Hybrid'],
+    enum: ['Live Online', 'Self-Paced', 'Classroom', 'Hybrid', 'Instructor-Led'],
     default: ['Self-Paced']
   },
   courseLanguage: {
@@ -337,7 +337,7 @@ const courseSchema = new mongoose.Schema({
   }],
   courseFormat: {
     type: String,
-    enum: ['Video', 'Live Sessions', 'Text', 'Interactive', 'Mixed'],
+    enum: ['Video', 'Live Sessions', 'Text', 'Interactive', 'Mixed', 'Hybrid'],
     default: 'Mixed'
   },
   accessDuration: {
@@ -348,7 +348,7 @@ const courseSchema = new mongoose.Schema({
   supportDetails: {
     supportType: {
       type: [String],
-      enum: ['Email', 'Phone', 'Live Chat', 'Forum', 'Mentor'],
+      enum: ['Email', 'Phone', 'Live Chat', 'Forum', 'Mentor', 'Slack community', 'Weekly live office hours', 'Dedicated mentor support'],
       default: ['Email']
     },
     supportHours: {
@@ -367,6 +367,19 @@ const courseSchema = new mongoose.Schema({
 });
 
 // Index for better query performance
+// Pre-save middleware to generate slug if not provided
+courseSchema.pre('save', function(next) {
+  if (!this.slug && this.courseName) {
+    this.slug = this.courseName
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      .replace(/\s+/g, '-') // Replace spaces with hyphens
+      .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+      .trim('-'); // Remove leading/trailing hyphens
+  }
+  next();
+});
+
 courseSchema.index({ category: 1 });
 courseSchema.index({ status: 1 });
 courseSchema.index({ startDate: 1 });

@@ -155,6 +155,28 @@ const enrollmentSchema = new mongoose.Schema({
     trim: true,
     maxlength: [1000, 'Notes cannot exceed 1000 characters']
   },
+  
+  // Solution-specific fields
+  requirements: {
+    type: String,
+    trim: true,
+    maxlength: [2000, 'Requirements cannot exceed 2000 characters']
+  },
+  company: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Company name cannot exceed 100 characters']
+  },
+  timeline: {
+    type: String,
+    trim: true,
+    maxlength: [50, 'Timeline cannot exceed 50 characters']
+  },
+  budget: {
+    type: String,
+    trim: true,
+    maxlength: [50, 'Budget cannot exceed 50 characters']
+  },
   ipAddress: {
     type: String,
     trim: true

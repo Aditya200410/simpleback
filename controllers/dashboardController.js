@@ -1,6 +1,7 @@
 const Course = require('../models/Course');
 const Student = require('../models/Student');
 const User = require('../models/User');
+const Enrollment = require('../models/Enrollment');
 
 // Get dashboard analytics
 const getDashboardStats = async (req, res) => {
@@ -8,6 +9,13 @@ const getDashboardStats = async (req, res) => {
     // Get total counts
     const totalStudents = await Student.countDocuments();
     const totalCourses = await Course.countDocuments();
+    
+    // Get enrollment statistics
+    const enrollmentStats = await Enrollment.getStats();
+    const totalEnrollments = enrollmentStats.enrollmentStats.total;
+    const pendingEnrollments = enrollmentStats.enrollmentStats.pending;
+    const approvedEnrollments = enrollmentStats.enrollmentStats.approved;
+    const completedEnrollments = enrollmentStats.enrollmentStats.completed;
     
     // Count certificates
     const certificateResult = await Student.aggregate([
@@ -17,17 +25,36 @@ const getDashboardStats = async (req, res) => {
     ]);
     const totalCertificates = certificateResult.length > 0 ? certificateResult[0].total : 0;
     
-    // Calculate total revenue
-    const revenueData = await Student.aggregate([
-      { $group: { _id: null, totalRevenue: { $sum: '$totalAmountPaid' } } }
+    // Calculate total revenue from enrollments
+    const enrollmentRevenue = await Enrollment.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalRevenue: {
+            $sum: {
+              $add: [
+                { $ifNull: ['$courseAmount', 0] },
+                { $ifNull: ['$grcServiceAmount', 0] },
+                { $ifNull: ['$solutionAmount', 0] }
+              ]
+            }
+          }
+        }
+      }
     ]);
-    const totalRevenue = revenueData.length > 0 ? revenueData[0].totalRevenue : 0;
+    const totalRevenue = enrollmentRevenue.length > 0 ? enrollmentRevenue[0].totalRevenue : 0;
 
     // Get recent activities (last 10 students)
     const recentStudents = await Student.find()
       .sort({ createdAt: -1 })
       .limit(10)
       .select('name email createdAt');
+
+    // Get recent enrollments
+    const recentEnrollments = await Enrollment.find()
+      .sort({ enrollmentDate: -1 })
+      .limit(10)
+      .select('fullName email courseName grcServiceName solutionName status enrollmentDate enrollmentType');
 
     // Get course statistics
     const courseStats = await Course.aggregate([
@@ -79,9 +106,14 @@ const getDashboardStats = async (req, res) => {
         totalStudents,
         totalCourses,
         totalCertificates,
-        totalRevenue
+        totalRevenue,
+        totalEnrollments,
+        pendingEnrollments,
+        approvedEnrollments,
+        completedEnrollments
       },
       recentStudents,
+      recentEnrollments,
       courseStats,
       monthlyRevenue
     });
