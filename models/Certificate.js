@@ -25,6 +25,17 @@ const certificateSchema = new mongoose.Schema({
       message: 'Please provide a valid email address'
     }
   },
+  studentPhone: {
+    type: String,
+    required: [true, 'Student phone is required'],
+    trim: true,
+    validate: {
+      validator: function(v) {
+        return /^[\+]?[1-9][\d]{0,15}$/.test(v);
+      },
+      message: 'Please provide a valid phone number'
+    }
+  },
   certificateName: {
     type: String,
     required: [true, 'Certificate name is required'],
@@ -100,6 +111,12 @@ const certificateSchema = new mongoose.Schema({
     trim: true,
     maxlength: [1000, 'Notes cannot exceed 1000 characters']
   },
+  remark: {
+    type: String,
+    required: [true, 'Remark is required'],
+    trim: true,
+    maxlength: [500, 'Remark cannot exceed 500 characters']
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -112,6 +129,7 @@ const certificateSchema = new mongoose.Schema({
 // Index for better query performance
 certificateSchema.index({ studentId: 1 });
 certificateSchema.index({ studentEmail: 1 });
+certificateSchema.index({ studentPhone: 1 });
 certificateSchema.index({ status: 1 });
 certificateSchema.index({ courseId: 1 });
 certificateSchema.index({ issueDate: -1 });

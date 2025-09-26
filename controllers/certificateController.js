@@ -2,6 +2,9 @@ const Certificate = require('../models/Certificate');
 const Course = require('../models/Course');
 const Student = require('../models/Student');
 const Enrollment = require('../models/Enrollment');
+const fs = require('fs');
+const path = require('path');
+const { createCanvas, loadImage, registerFont } = require('@napi-rs/canvas');
 
 // Helper function to add certificate to student record
 const addCertificateToStudent = async (certificate) => {
@@ -71,20 +74,22 @@ const createCertificate = async (req, res) => {
       studentName,
       studentId,
       studentEmail,
+      studentPhone,
       certificateName,
       courseId,
       courseName,
       expiryDate,
       grade,
       completionPercentage,
-      notes
+      notes,
+      remark
     } = req.body;
 
     // Validate required fields
-    if (!studentName || !studentId || !studentEmail || !certificateName || !courseId || !courseName) {
+    if (!studentName || !studentId || !studentEmail || !studentPhone || !remark || !certificateName || !courseId || !courseName) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields: studentName, studentId, studentEmail, certificateName, courseId, courseName'
+        message: 'Required fields: studentName, studentId, studentEmail, studentPhone, remark, certificateName, courseId, courseName'
       });
     }
 
@@ -111,6 +116,7 @@ const createCertificate = async (req, res) => {
       studentName,
       studentId,
       studentEmail,
+      studentPhone,
       certificateName,
       courseId,
       courseName,
@@ -118,6 +124,7 @@ const createCertificate = async (req, res) => {
       grade: grade || 'Pass',
       completionPercentage: completionPercentage || 100,
       notes,
+      remark,
       createdBy: req.userId
     });
 
@@ -208,11 +215,13 @@ const updateCertificate = async (req, res) => {
     const {
       studentName,
       studentEmail,
+      studentPhone,
       certificateName,
       expiryDate,
       grade,
       completionPercentage,
-      notes
+      notes,
+      remark
     } = req.body;
 
     const certificate = await Certificate.findById(req.params.id);
@@ -235,11 +244,13 @@ const updateCertificate = async (req, res) => {
     // Update fields
     if (studentName) certificate.studentName = studentName;
     if (studentEmail) certificate.studentEmail = studentEmail;
+    if (studentPhone) certificate.studentPhone = studentPhone;
     if (certificateName) certificate.certificateName = certificateName;
     if (expiryDate !== undefined) certificate.expiryDate = expiryDate ? new Date(expiryDate) : undefined;
     if (grade) certificate.grade = grade;
     if (completionPercentage !== undefined) certificate.completionPercentage = completionPercentage;
     if (notes !== undefined) certificate.notes = notes;
+    if (remark !== undefined) certificate.remark = remark;
 
     await certificate.save();
 
@@ -503,17 +514,19 @@ const requestCertificate = async (req, res) => {
       studentName,
       studentId,
       studentEmail,
+      studentPhone,
       certificateName,
       courseId,
       courseName,
-      notes
+      notes,
+      remark
     } = req.body;
 
     // Validate required fields
-    if (!studentName || !studentId || !studentEmail || !courseId || !courseName) {
+    if (!studentName || !studentId || !studentEmail || !studentPhone || !remark || !courseId || !courseName) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields: studentName, studentId, studentEmail, courseId, courseName'
+        message: 'Required fields: studentName, studentId, studentEmail, studentPhone, remark, courseId, courseName'
       });
     }
 
@@ -545,10 +558,12 @@ const requestCertificate = async (req, res) => {
       studentName,
       studentId,
       studentEmail: studentEmail.toLowerCase(),
+      studentPhone,
       certificateName: certificateName || `Certificate of Completion - ${courseName}`,
       courseId,
       courseName,
       notes: notes || `Certificate requested by student via web form on ${new Date().toLocaleDateString()}`,
+      remark,
       // For public requests, we'll use a system user ID or null
       createdBy: null
     });
@@ -682,6 +697,139 @@ const verifyCertificateByNumber = async (req, res) => {
   }
 };
 
+// Generate and download certificate image
+const generateCertificateImage = async (req, res) => {
+  try {
+    const { studentName, studentPhone, studentEmail, courseName, remark } = req.body;
+
+    // Validate required fields
+    if (!studentName || !studentPhone || !studentEmail || !courseName || !remark) {
+      return res.status(400).json({
+        success: false,
+        message: 'Required fields: studentName, studentPhone, studentEmail, courseName, remark'
+      });
+    }
+
+    // Check if certificate exists with these exact details
+    const certificate = await Certificate.findOne({
+      studentName: { $regex: new RegExp(studentName, 'i') },
+      studentPhone,
+      studentEmail: studentEmail.toLowerCase(),
+      courseName: { $regex: new RegExp(courseName, 'i') },
+      remark: { $regex: new RegExp(remark, 'i') },
+      status: { $in: ['Approved', 'Issued'] }
+    });
+
+    if (!certificate) {
+      return res.status(404).json({
+        success: false,
+        message: 'No matching certificate found with the provided details'
+      });
+    }
+
+    // Create canvas for certificate
+    const canvas = createCanvas(1200, 800);
+    const ctx = canvas.getContext('2d');
+
+    // Set background gradient
+    const gradient = ctx.createLinearGradient(0, 0, 1200, 800);
+    gradient.addColorStop(0, '#f8fafc');
+    gradient.addColorStop(1, '#e2e8f0');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 1200, 800);
+
+    // Add border
+    ctx.strokeStyle = '#3b82f6';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(40, 40, 1120, 720);
+
+    // Add inner border
+    ctx.strokeStyle = '#1e40af';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(60, 60, 1080, 680);
+
+    // Add decorative elements
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = 'bold 48px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('CERTIFICATE OF COMPLETION', 600, 120);
+
+    // Add course name
+    ctx.fillStyle = '#1e40af';
+    ctx.font = 'bold 32px Arial';
+    ctx.fillText(courseName, 600, 180);
+
+    // Add "This is to certify that"
+    ctx.fillStyle = '#374151';
+    ctx.font = '24px Arial';
+    ctx.fillText('This is to certify that', 600, 250);
+
+    // Add student name
+    ctx.fillStyle = '#1e40af';
+    ctx.font = 'bold 36px Arial';
+    ctx.fillText(studentName, 600, 320);
+
+    // Add student details
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '20px Arial';
+    ctx.fillText(`Phone: ${studentPhone}`, 600, 380);
+    ctx.fillText(`Email: ${studentEmail}`, 600, 410);
+
+    // Add remark
+    ctx.fillStyle = '#374151';
+    ctx.font = '22px Arial';
+    ctx.fillText(`Remark: ${remark}`, 600, 480);
+
+    // Add completion text
+    ctx.fillStyle = '#374151';
+    ctx.font = '20px Arial';
+    ctx.fillText('has successfully completed the course', 600, 550);
+
+    // Add date
+    const currentDate = new Date().toLocaleDateString('en-GB');
+    ctx.fillStyle = '#6b7280';
+    ctx.font = '18px Arial';
+    ctx.fillText(`Date: ${currentDate}`, 600, 620);
+
+    // Add certificate number if available
+    if (certificate.certificateNumber) {
+      ctx.fillStyle = '#6b7280';
+      ctx.font = '16px Arial';
+      ctx.fillText(`Certificate #: ${certificate.certificateNumber}`, 600, 650);
+    }
+
+    // Add signature line
+    ctx.strokeStyle = '#374151';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(200, 700);
+    ctx.lineTo(400, 700);
+    ctx.stroke();
+    ctx.fillStyle = '#374151';
+    ctx.font = '16px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Authorized Signature', 300, 720);
+
+    // Convert canvas to buffer
+    const buffer = canvas.encode('png');
+
+    // Set response headers
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', `attachment; filename="certificate-${studentName.replace(/\s+/g, '-')}-${courseName.replace(/\s+/g, '-')}.png"`);
+    res.setHeader('Content-Length', buffer.length);
+
+    // Send the image
+    res.send(buffer);
+
+  } catch (error) {
+    console.error('Generate certificate image error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate certificate image'
+    });
+  }
+};
+
 module.exports = {
   createCertificate,
   getAllCertificates,
@@ -695,5 +843,6 @@ module.exports = {
   requestCertificate,
   getCertificatesByStudentEmail,
   getCertificateByStudentAndCourse,
-  verifyCertificateByNumber
+  verifyCertificateByNumber,
+  generateCertificateImage
 };

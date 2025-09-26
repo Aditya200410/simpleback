@@ -10,6 +10,7 @@
     "reset": "node reset-db.js"
   },
   "dependencies": {
+    "@napi-rs/canvas": "^0.1.80",
     "axios": "^1.11.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

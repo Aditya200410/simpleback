@@ -14,11 +14,13 @@ const {
   requestCertificate,
   getCertificatesByStudentEmail,
   getCertificateByStudentAndCourse,
-  verifyCertificateByNumber
+  verifyCertificateByNumber,
+  generateCertificateImage
 } = require('../controllers/certificateController');
 
 // Public routes (no authentication required)
 router.post('/request', requestCertificate);
+router.post('/generate', generateCertificateImage);
 router.get('/student/:email', getCertificatesByStudentEmail);
 router.get('/student/:email/course/:courseId', getCertificateByStudentAndCourse);
 router.get('/verify/:certificateNumber', verifyCertificateByNumber);
