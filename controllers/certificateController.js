@@ -727,6 +727,15 @@ const generateCertificateImage = async (req, res) => {
       });
     }
 
+    // Check if certificate is blocked
+    if (certificate.blocked) {
+      return res.status(403).json({
+        success: false,
+        message: 'Certificate is blocked and cannot be downloaded',
+        blockReason: certificate.blockReason
+      });
+    }
+
     // Generate HTML certificate
     const currentDate = new Date().toLocaleDateString('en-GB');
     const html = `
@@ -877,6 +886,76 @@ const generateCertificateImage = async (req, res) => {
   }
 };
 
+// Block certificate
+const blockCertificate = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { blockReason } = req.body;
+    const adminId = req.user.id;
+
+    const certificate = await Certificate.findById(id);
+    if (!certificate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Certificate not found'
+      });
+    }
+
+    certificate.blocked = true;
+    certificate.blockedBy = adminId;
+    certificate.blockedAt = new Date();
+    certificate.blockReason = blockReason || 'Certificate blocked by admin';
+
+    await certificate.save();
+
+    res.json({
+      success: true,
+      message: 'Certificate blocked successfully',
+      certificate
+    });
+  } catch (error) {
+    console.error('Block certificate error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to block certificate'
+    });
+  }
+};
+
+// Unblock certificate
+const unblockCertificate = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const certificate = await Certificate.findById(id);
+    if (!certificate) {
+      return res.status(404).json({
+        success: false,
+        message: 'Certificate not found'
+      });
+    }
+
+    certificate.blocked = false;
+    certificate.blockedBy = undefined;
+    certificate.blockedAt = undefined;
+    certificate.blockReason = undefined;
+
+    await certificate.save();
+
+    res.json({
+      success: true,
+      message: 'Certificate unblocked successfully',
+      certificate
+    });
+  } catch (error) {
+    console.error('Unblock certificate error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to unblock certificate'
+    });
+  }
+};
+
 module.exports = {
   createCertificate,
   getAllCertificates,
@@ -891,5 +970,7 @@ module.exports = {
   getCertificatesByStudentEmail,
   getCertificateByStudentAndCourse,
   verifyCertificateByNumber,
-  generateCertificateImage
+  generateCertificateImage,
+  blockCertificate,
+  unblockCertificate
 };

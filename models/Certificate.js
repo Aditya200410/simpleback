@@ -117,6 +117,22 @@ const certificateSchema = new mongoose.Schema({
     trim: true,
     maxlength: [500, 'Remark cannot exceed 500 characters']
   },
+  blocked: {
+    type: Boolean,
+    default: false
+  },
+  blockedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  blockedAt: {
+    type: Date
+  },
+  blockReason: {
+    type: String,
+    trim: true,
+    maxlength: [500, 'Block reason cannot exceed 500 characters']
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -131,6 +147,7 @@ certificateSchema.index({ studentId: 1 });
 certificateSchema.index({ studentEmail: 1 });
 certificateSchema.index({ studentPhone: 1 });
 certificateSchema.index({ status: 1 });
+certificateSchema.index({ blocked: 1 });
 certificateSchema.index({ courseId: 1 });
 certificateSchema.index({ issueDate: -1 });
 certificateSchema.index({ createdAt: -1 });

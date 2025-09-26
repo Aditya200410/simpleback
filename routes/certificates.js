@@ -15,7 +15,9 @@ const {
   getCertificatesByStudentEmail,
   getCertificateByStudentAndCourse,
   verifyCertificateByNumber,
-  generateCertificateImage
+  generateCertificateImage,
+  blockCertificate,
+  unblockCertificate
 } = require('../controllers/certificateController');
 
 // Public routes (no authentication required)
@@ -51,6 +53,12 @@ router.put('/:id/reject', rejectCertificate);
 
 // PUT /api/certificates/:id/issue - Issue certificate
 router.put('/:id/issue', issueCertificate);
+
+// PUT /api/certificates/:id/block - Block certificate
+router.put('/:id/block', blockCertificate);
+
+// PUT /api/certificates/:id/unblock - Unblock certificate
+router.put('/:id/unblock', unblockCertificate);
 
 // DELETE /api/certificates/:id - Delete certificate
 router.delete('/:id', deleteCertificate);
