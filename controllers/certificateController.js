@@ -4,7 +4,7 @@ const Student = require('../models/Student');
 const Enrollment = require('../models/Enrollment');
 const fs = require('fs');
 const path = require('path');
-const { createCanvas, loadImage, registerFont } = require('@napi-rs/canvas');
+// const { createCanvas, loadImage, registerFont } = require('canvas');
 
 // Helper function to add certificate to student record
 const addCertificateToStudent = async (certificate) => {
@@ -727,99 +727,146 @@ const generateCertificateImage = async (req, res) => {
       });
     }
 
-    // Create canvas for certificate
-    const canvas = createCanvas(1200, 800);
-    const ctx = canvas.getContext('2d');
-
-    // Set background gradient
-    const gradient = ctx.createLinearGradient(0, 0, 1200, 800);
-    gradient.addColorStop(0, '#f8fafc');
-    gradient.addColorStop(1, '#e2e8f0');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 1200, 800);
-
-    // Add border
-    ctx.strokeStyle = '#3b82f6';
-    ctx.lineWidth = 8;
-    ctx.strokeRect(40, 40, 1120, 720);
-
-    // Add inner border
-    ctx.strokeStyle = '#1e40af';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(60, 60, 1080, 680);
-
-    // Add decorative elements
-    ctx.fillStyle = '#3b82f6';
-    ctx.font = 'bold 48px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('CERTIFICATE OF COMPLETION', 600, 120);
-
-    // Add course name
-    ctx.fillStyle = '#1e40af';
-    ctx.font = 'bold 32px Arial';
-    ctx.fillText(courseName, 600, 180);
-
-    // Add "This is to certify that"
-    ctx.fillStyle = '#374151';
-    ctx.font = '24px Arial';
-    ctx.fillText('This is to certify that', 600, 250);
-
-    // Add student name
-    ctx.fillStyle = '#1e40af';
-    ctx.font = 'bold 36px Arial';
-    ctx.fillText(studentName, 600, 320);
-
-    // Add student details
-    ctx.fillStyle = '#6b7280';
-    ctx.font = '20px Arial';
-    ctx.fillText(`Phone: ${studentPhone}`, 600, 380);
-    ctx.fillText(`Email: ${studentEmail}`, 600, 410);
-
-    // Add remark
-    ctx.fillStyle = '#374151';
-    ctx.font = '22px Arial';
-    ctx.fillText(`Remark: ${remark}`, 600, 480);
-
-    // Add completion text
-    ctx.fillStyle = '#374151';
-    ctx.font = '20px Arial';
-    ctx.fillText('has successfully completed the course', 600, 550);
-
-    // Add date
+    // Generate HTML certificate
     const currentDate = new Date().toLocaleDateString('en-GB');
-    ctx.fillStyle = '#6b7280';
-    ctx.font = '18px Arial';
-    ctx.fillText(`Date: ${currentDate}`, 600, 620);
+    const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Certificate - ${studentName}</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 20px;
+                font-family: 'Arial', sans-serif;
+                background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+                min-height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .certificate {
+                width: 800px;
+                height: 600px;
+                background: white;
+                border: 8px solid #3b82f6;
+                border-radius: 10px;
+                position: relative;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+                padding: 40px;
+            }
+            .certificate::before {
+                content: '';
+                position: absolute;
+                top: 20px;
+                left: 20px;
+                right: 20px;
+                bottom: 20px;
+                border: 2px solid #1e40af;
+                border-radius: 5px;
+            }
+            .title {
+                color: #3b82f6;
+                font-size: 36px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
+            .course-name {
+                color: #1e40af;
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 30px;
+            }
+            .certify-text {
+                color: #374151;
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+            .student-name {
+                color: #1e40af;
+                font-size: 28px;
+                font-weight: bold;
+                margin-bottom: 30px;
+                text-decoration: underline;
+            }
+            .student-details {
+                color: #6b7280;
+                font-size: 16px;
+                margin-bottom: 10px;
+            }
+            .remark {
+                color: #374151;
+                font-size: 18px;
+                margin: 20px 0;
+                font-style: italic;
+            }
+            .completion-text {
+                color: #374151;
+                font-size: 16px;
+                margin-bottom: 30px;
+            }
+            .date {
+                color: #6b7280;
+                font-size: 14px;
+                margin-bottom: 10px;
+            }
+            .certificate-number {
+                color: #6b7280;
+                font-size: 12px;
+                margin-bottom: 20px;
+            }
+            .signature {
+                position: absolute;
+                bottom: 40px;
+                left: 50px;
+                text-align: center;
+            }
+            .signature-line {
+                border-top: 1px solid #374151;
+                width: 150px;
+                margin-bottom: 5px;
+            }
+            .signature-text {
+                color: #374151;
+                font-size: 12px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="certificate">
+            <div class="title">Certificate of Completion</div>
+            <div class="course-name">${courseName}</div>
+            <div class="certify-text">This is to certify that</div>
+            <div class="student-name">${studentName}</div>
+            <div class="student-details">Phone: ${studentPhone}</div>
+            <div class="student-details">Email: ${studentEmail}</div>
+            <div class="remark">Remark: ${remark}</div>
+            <div class="completion-text">has successfully completed the course</div>
+            <div class="date">Date: ${currentDate}</div>
+            ${certificate.certificateNumber ? `<div class="certificate-number">Certificate #: ${certificate.certificateNumber}</div>` : ''}
+            <div class="signature">
+                <div class="signature-line"></div>
+                <div class="signature-text">Authorized Signature</div>
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
 
-    // Add certificate number if available
-    if (certificate.certificateNumber) {
-      ctx.fillStyle = '#6b7280';
-      ctx.font = '16px Arial';
-      ctx.fillText(`Certificate #: ${certificate.certificateNumber}`, 600, 650);
-    }
+    // Set response headers for HTML
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Content-Disposition', `inline; filename="certificate-${studentName.replace(/\s+/g, '-')}-${courseName.replace(/\s+/g, '-')}.html"`);
 
-    // Add signature line
-    ctx.strokeStyle = '#374151';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(200, 700);
-    ctx.lineTo(400, 700);
-    ctx.stroke();
-    ctx.fillStyle = '#374151';
-    ctx.font = '16px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('Authorized Signature', 300, 720);
-
-    // Convert canvas to buffer
-    const buffer = canvas.encode('png');
-
-    // Set response headers
-    res.setHeader('Content-Type', 'image/png');
-    res.setHeader('Content-Disposition', `attachment; filename="certificate-${studentName.replace(/\s+/g, '-')}-${courseName.replace(/\s+/g, '-')}.png"`);
-    res.setHeader('Content-Length', buffer.length);
-
-    // Send the image
-    res.send(buffer);
+    // Send the HTML
+    res.send(html);
 
   } catch (error) {
     console.error('Generate certificate image error:', error);
