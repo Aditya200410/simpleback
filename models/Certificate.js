@@ -106,17 +106,6 @@ const certificateSchema = new mongoose.Schema({
     max: [100, 'Completion percentage cannot exceed 100'],
     default: 100
   },
-  notes: {
-    type: String,
-    trim: true,
-    maxlength: [1000, 'Notes cannot exceed 1000 characters']
-  },
-  remark: {
-    type: String,
-    required: [true, 'Remark is required'],
-    trim: true,
-    maxlength: [500, 'Remark cannot exceed 500 characters']
-  },
   blocked: {
     type: Boolean,
     default: false

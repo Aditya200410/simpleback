@@ -149,12 +149,6 @@ const enrollmentSchema = new mongoose.Schema({
     ref: 'User'
   },
   
-  // Additional Information
-  notes: {
-    type: String,
-    trim: true,
-    maxlength: [1000, 'Notes cannot exceed 1000 characters']
-  },
   
   // Solution-specific fields
   requirements: {

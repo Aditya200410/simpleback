@@ -80,16 +80,14 @@ const createCertificate = async (req, res) => {
       courseName,
       expiryDate,
       grade,
-      completionPercentage,
-      notes,
-      remark
+      completionPercentage
     } = req.body;
 
     // Validate required fields
-    if (!studentName || !studentId || !studentEmail || !studentPhone || !remark || !certificateName || !courseId || !courseName) {
+    if (!studentName || !studentId || !studentEmail || !studentPhone || !certificateName || !courseId || !courseName) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields: studentName, studentId, studentEmail, studentPhone, remark, certificateName, courseId, courseName'
+        message: 'Required fields: studentName, studentId, studentEmail, studentPhone, certificateName, courseId, courseName'
       });
     }
 
@@ -123,8 +121,6 @@ const createCertificate = async (req, res) => {
       expiryDate: expiryDate ? new Date(expiryDate) : undefined,
       grade: grade || 'Pass',
       completionPercentage: completionPercentage || 100,
-      notes,
-      remark,
       createdBy: req.userId
     });
 
@@ -219,9 +215,7 @@ const updateCertificate = async (req, res) => {
       certificateName,
       expiryDate,
       grade,
-      completionPercentage,
-      notes,
-      remark
+      completionPercentage
     } = req.body;
 
     const certificate = await Certificate.findById(req.params.id);
@@ -249,8 +243,6 @@ const updateCertificate = async (req, res) => {
     if (expiryDate !== undefined) certificate.expiryDate = expiryDate ? new Date(expiryDate) : undefined;
     if (grade) certificate.grade = grade;
     if (completionPercentage !== undefined) certificate.completionPercentage = completionPercentage;
-    if (notes !== undefined) certificate.notes = notes;
-    if (remark !== undefined) certificate.remark = remark;
 
     await certificate.save();
 
@@ -517,16 +509,14 @@ const requestCertificate = async (req, res) => {
       studentPhone,
       certificateName,
       courseId,
-      courseName,
-      notes,
-      remark
+      courseName
     } = req.body;
 
     // Validate required fields
-    if (!studentName || !studentId || !studentEmail || !studentPhone || !remark || !courseId || !courseName) {
+    if (!studentName || !studentId || !studentEmail || !studentPhone || !courseId || !courseName) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields: studentName, studentId, studentEmail, studentPhone, remark, courseId, courseName'
+        message: 'Required fields: studentName, studentId, studentEmail, studentPhone, courseId, courseName'
       });
     }
 
@@ -562,8 +552,6 @@ const requestCertificate = async (req, res) => {
       certificateName: certificateName || `Certificate of Completion - ${courseName}`,
       courseId,
       courseName,
-      notes: notes || `Certificate requested by student via web form on ${new Date().toLocaleDateString()}`,
-      remark,
       // For public requests, we'll use a system user ID or null
       createdBy: null
     });

@@ -296,7 +296,7 @@ const getEnrollmentById = async (req, res) => {
 // Update enrollment status (admin only)
 const updateEnrollmentStatus = async (req, res) => {
   try {
-    const { status, notes } = req.body;
+    const { status } = req.body;
     const enrollmentId = req.params.id;
 
     if (!status || !['Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled'].includes(status)) {
@@ -342,7 +342,6 @@ const updateEnrollmentStatus = async (req, res) => {
 
     // Update enrollment for non-rejection statuses
     enrollment.status = status;
-    if (notes) enrollment.notes = notes;
     if (status === 'Approved') enrollment.approvedBy = req.userId;
 
     await enrollment.save();
@@ -549,11 +548,6 @@ const sendEmailReply = async (req, res) => {
       });
     }
 
-    // Update enrollment with admin notes
-    enrollment.notes = enrollment.notes ? 
-      `${enrollment.notes}\n\nAdmin Reply (${new Date().toLocaleDateString()}): ${replyMessage}` : 
-      `Admin Reply (${new Date().toLocaleDateString()}): ${replyMessage}`;
-    
     await enrollment.save();
 
     res.json({
