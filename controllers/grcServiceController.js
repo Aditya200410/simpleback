@@ -116,6 +116,7 @@ const createGRCService = async (req, res) => {
       requirements,
       deliverables,
       pricing,
+      paymentDetails,
       duration, 
       industry,
       compliance,
@@ -156,6 +157,7 @@ const createGRCService = async (req, res) => {
       requirements: requirements || [],
       deliverables: deliverables || [],
       pricing: pricing || {},
+      paymentDetails: paymentDetails || {},
       duration,
       industry: industry || [],
       compliance: compliance || [],
@@ -202,6 +204,7 @@ const updateGRCService = async (req, res) => {
       requirements,
       deliverables,
       pricing,
+      paymentDetails,
       duration, 
       industry,
       compliance,
@@ -237,6 +240,7 @@ const updateGRCService = async (req, res) => {
     if (requirements && Array.isArray(requirements)) service.requirements = requirements;
     if (deliverables && Array.isArray(deliverables)) service.deliverables = deliverables;
     if (pricing) service.pricing = pricing;
+    if (paymentDetails) service.paymentDetails = paymentDetails;
     if (duration) service.duration = duration;
     if (industry && Array.isArray(industry)) service.industry = industry;
     if (compliance && Array.isArray(compliance)) service.compliance = compliance;
