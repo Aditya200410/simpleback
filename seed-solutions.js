@@ -352,10 +352,57 @@ const seedSolutions = async () => {
     console.log('Cleared existing solutions');
 
     // Add admin user ID to all solutions
-    const solutionsWithUser = solutionsData.map(solution => ({
-      ...solution,
-      createdBy: adminUser._id
-    }));
+    const toSlug = (text) =>
+      (text || '')
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+
+    const solutionsWithUser = solutionsData.map(solution => {
+      const normalized = { ...solution };
+      // Normalize FAQ to FAQs for the new model
+      if (normalized.faq && !normalized.faqs) {
+        normalized.faqs = normalized.faq;
+      }
+      // Map solutionName to title if missing
+      if (!normalized.title && normalized.solutionName) {
+        normalized.title = normalized.solutionName;
+      }
+      // Ensure slug exists (from title or solutionName)
+      if (!normalized.slug) {
+        normalized.slug = toSlug(normalized.title || normalized.solutionName || '');
+      }
+      // Ensure detailedDescription exists
+      if (!normalized.detailedDescription && normalized.description) {
+        normalized.detailedDescription = normalized.description;
+      }
+      // Ensure pricing object shape exists
+      if (!normalized.pricing && typeof normalized.price === 'number') {
+        normalized.pricing = {
+          startingFrom: normalized.price,
+          currency: 'INR',
+          includes: [],
+          excludes: []
+        };
+      } else if (normalized.pricing) {
+        normalized.pricing.includes = normalized.pricing.includes || [];
+        normalized.pricing.excludes = normalized.pricing.excludes || [];
+        normalized.pricing.currency = normalized.pricing.currency || 'INR';
+      }
+      // Add paymentDetails defaults like GRC
+      normalized.paymentDetails = normalized.paymentDetails || {
+        moneyBackGuarantee: '30 days Money back guarantee',
+        emiFacilities: 'EMI facilities also available 3-6 months for startups companies',
+        termsAndConditions: '*terms and conditions apply'
+      };
+      return {
+        ...normalized,
+        createdBy: adminUser._id
+      };
+    });
 
     // Insert new solutions
     const solutions = await Solution.insertMany(solutionsWithUser);

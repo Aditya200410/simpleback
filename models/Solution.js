@@ -70,6 +70,20 @@ const solutionSchema = new mongoose.Schema({
     includes: [String],
     excludes: [String]
   },
+  paymentDetails: {
+    moneyBackGuarantee: {
+      type: String,
+      default: '30 days Money back guarantee'
+    },
+    emiFacilities: {
+      type: String,
+      default: 'EMI facilities also available 3-6 months for startups companies'
+    },
+    termsAndConditions: {
+      type: String,
+      default: '*terms and conditions apply'
+    }
+  },
   industry: [{
     type: String,
     trim: true
@@ -88,7 +102,13 @@ const solutionSchema = new mongoose.Schema({
     industry: String,
     results: [String]
   }],
+  // Keep original field for backward compatibility
   relatedServices: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Solution'
+  }],
+  // Preferred field name aligned with frontend usage
+  relatedSolutions: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Solution'
   }],

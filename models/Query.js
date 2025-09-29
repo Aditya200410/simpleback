@@ -19,14 +19,21 @@ const querySchema = new mongoose.Schema({
     trim: true,
     maxlength: [20, 'Phone number cannot exceed 20 characters']
   },
+  // Either course or GRC service will be provided
   courseId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Course',
-    required: [true, 'Course ID is required']
+    ref: 'Course'
   },
   courseName: {
     type: String,
-    required: [true, 'Course name is required'],
+    trim: true
+  },
+  grcServiceId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'GRCService'
+  },
+  grcServiceName: {
+    type: String,
     trim: true
   },
   subject: {
@@ -75,8 +82,9 @@ const querySchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for better query performance
+// Indexes for better query performance
 querySchema.index({ courseId: 1, status: 1, createdAt: -1 });
+querySchema.index({ grcServiceId: 1, status: 1, createdAt: -1 });
 querySchema.index({ email: 1, createdAt: -1 });
 querySchema.index({ status: 1, priority: 1, createdAt: -1 });
 

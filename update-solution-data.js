@@ -1,8 +1,14 @@
 const mongoose = require('mongoose');
 const Solution = require('./models/Solution');
+require('dotenv').config();
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/simpleadmin');
+// Set default environment variables if not provided (align with seeder)
+process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://lightyagami98k:UN1cr0DnJwISvvgs@cluster0.uwkswmj.mongodb.net/cyber?retryWrites=true&w=majority&appName=Cluster0';
+
+// Connect to MongoDB with higher timeout
+mongoose.connect(process.env.MONGODB_URI, {
+  serverSelectionTimeoutMS: 20000
+});
 
 const updateSolutionData = async () => {
   try {
@@ -40,12 +46,28 @@ const updateSolutionData = async () => {
         }
         
         // Update pricing structure if needed
-        if (solution.price && !solution.pricing) {
+        if ((solution.price || solution.price === 0) && !solution.pricing) {
           updateData.pricing = {
             startingFrom: solution.price,
             currency: 'INR',
             includes: [],
             excludes: []
+          };
+        } else if (solution.pricing) {
+          updateData.pricing = {
+            startingFrom: solution.pricing.startingFrom || solution.price || 0,
+            currency: solution.pricing.currency || 'INR',
+            includes: solution.pricing.includes || [],
+            excludes: solution.pricing.excludes || []
+          };
+        }
+
+        // Add paymentDetails defaults if missing
+        if (!solution.paymentDetails) {
+          updateData.paymentDetails = {
+            moneyBackGuarantee: '30 days Money back guarantee',
+            emiFacilities: 'EMI facilities also available 3-6 months for startups companies',
+            termsAndConditions: '*terms and conditions apply'
           };
         }
         

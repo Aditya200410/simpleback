@@ -107,7 +107,7 @@ const emailTemplates = {
           
           <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 14px;">
             <p style="margin: 0;">© 2024 Cyberatrix Solutions. All rights reserved.</p>
-            <p style="margin: 5px 0 0 0;">For support, contact us at support@cyberatrixsolutions.com</p>
+            <p style="margin: 5px 0 0 0;">For support, contact us at sales@cyberatrix.com.com</p>
           </div>
         </div>
       `
@@ -262,7 +262,7 @@ const emailTemplates = {
           
           <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 14px;">
             <p style="margin: 0;">© 2024 Cyberatrix Solutions. All rights reserved.</p>
-            <p style="margin: 5px 0 0 0;">For support, contact us at support@cyberatrixsolutions.com</p>
+            <p style="margin: 5px 0 0 0;">For support, contact us at sales@cyberatrix.com.com</p>
           </div>
         </div>
       `

@@ -1,26 +1,55 @@
 const Query = require('../models/Query');
 const Course = require('../models/Course');
+const GRCService = require('../models/GRCService');
 
-// Create a new query
+// Create a new query (supports course or GRC service)
 const createQuery = async (req, res) => {
   try {
-    const { fullName, email, phone, courseId, courseName, subject, question, priority } = req.body;
+    const { 
+      fullName, 
+      email, 
+      phone, 
+      courseId, 
+      courseName, 
+      grcServiceId,
+      grcServiceName,
+      subject, 
+      question, 
+      priority 
+    } = req.body;
 
-    // Validate required fields
-    if (!fullName || !email || !courseId || !courseName || !subject || !question) {
+    // Validate required fields: either course or GRC service must be provided
+    const hasCourse = !!(courseId && courseName);
+    const hasGRC = !!(grcServiceId && grcServiceName);
+
+    if (!fullName || !email || !subject || !question || (!hasCourse && !hasGRC)) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be provided'
       });
     }
 
-    // Verify course exists
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return res.status(404).json({
-        success: false,
-        message: 'Course not found'
-      });
+    let resolvedCourse = null;
+    let resolvedService = null;
+
+    if (hasCourse) {
+      resolvedCourse = await Course.findById(courseId);
+      if (!resolvedCourse) {
+        return res.status(404).json({
+          success: false,
+          message: 'Course not found'
+        });
+      }
+    }
+
+    if (hasGRC) {
+      resolvedService = await GRCService.findById(grcServiceId);
+      if (!resolvedService) {
+        return res.status(404).json({
+          success: false,
+          message: 'GRC service not found'
+        });
+      }
     }
 
     // Create new query
@@ -28,8 +57,10 @@ const createQuery = async (req, res) => {
       fullName,
       email,
       phone,
-      courseId,
-      courseName: course.title || courseName, // Use course title from database
+      courseId: hasCourse ? courseId : undefined,
+      courseName: hasCourse ? (resolvedCourse.title || courseName) : undefined,
+      grcServiceId: hasGRC ? grcServiceId : undefined,
+      grcServiceName: hasGRC ? (resolvedService.title || grcServiceName) : undefined,
       subject,
       question,
       priority: priority || 'Medium'
@@ -37,8 +68,9 @@ const createQuery = async (req, res) => {
 
     await query.save();
 
-    // Populate course details for response
+    // Populate related references for response
     await query.populate('courseId', 'title category');
+    await query.populate('grcServiceId', 'title category');
 
     res.status(201).json({
       success: true,
@@ -50,6 +82,8 @@ const createQuery = async (req, res) => {
         phone: query.phone,
         courseId: query.courseId,
         courseName: query.courseName,
+        grcServiceId: query.grcServiceId,
+        grcServiceName: query.grcServiceName,
         subject: query.subject,
         question: query.question,
         priority: query.priority,
@@ -107,6 +141,7 @@ const getAllQueries = async (req, res) => {
     // Get queries with pagination
     const queries = await Query.find(filter)
       .populate('courseId', 'title category price')
+        .populate('grcServiceId', 'title category')
       .populate('respondedBy', 'email')
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -166,6 +201,7 @@ const getQueryById = async (req, res) => {
   try {
     const query = await Query.findById(req.params.id)
       .populate('courseId', 'title category price description')
+      .populate('grcServiceId', 'title category')
       .populate('respondedBy', 'email');
 
     if (!query) {
@@ -311,6 +347,7 @@ const getQueriesByEmail = async (req, res) => {
     // Get queries for this email
     const queries = await Query.find({ email: email.toLowerCase() })
       .populate('courseId', 'title category')
+      .populate('grcServiceId', 'title category')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);
