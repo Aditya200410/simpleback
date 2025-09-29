@@ -222,7 +222,6 @@ const courseSchema = new mongoose.Schema({
   examDetails: {
     examFormat: {
       type: String,
-      enum: ['Multiple Choice', 'Practical', 'Essay', 'Mixed', 'Online', 'Offline', 'Hands-on labs + CTF score + 1-on-1 interview', 'Oral proficiency test + Written'],
       // optional
     },
     examDuration: {
