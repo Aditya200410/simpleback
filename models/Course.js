@@ -222,8 +222,8 @@ const courseSchema = new mongoose.Schema({
   examDetails: {
     examFormat: {
       type: String,
-      enum: ['Multiple Choice', 'Practical', 'Essay', 'Mixed', 'Online', 'Offline', 'Hands-on labs + CTF score + 1-on-1 interview'],
-      default: 'Multiple Choice'
+      enum: ['Multiple Choice', 'Practical', 'Essay', 'Mixed', 'Online', 'Offline', 'Hands-on labs + CTF score + 1-on-1 interview', 'Oral proficiency test + Written'],
+      // optional
     },
     examDuration: {
       type: Number, // in minutes
@@ -306,8 +306,8 @@ const courseSchema = new mongoose.Schema({
   },
   learningMode: {
     type: [String],
-    enum: ['Live Online', 'Self-Paced', 'Classroom', 'Hybrid', 'Instructor-Led'],
-    default: ['Self-Paced']
+    enum: ['Live Online', 'Self-Paced', 'Classroom', 'Hybrid', 'Instructor-Led', 'Live Instructor-Led', 'Self-Practice'],
+    // optional
   },
   courseLanguage: {
     type: [String],
@@ -337,8 +337,8 @@ const courseSchema = new mongoose.Schema({
   }],
   courseFormat: {
     type: String,
-    enum: ['Video', 'Live Sessions', 'Text', 'Interactive', 'Mixed', 'Hybrid'],
-    default: 'Mixed'
+    enum: ['Video', 'Live Sessions', 'Text', 'Interactive', 'Mixed', 'Hybrid', 'Live & Practical'],
+    // optional
   },
   accessDuration: {
     type: Number, // in days
@@ -348,8 +348,8 @@ const courseSchema = new mongoose.Schema({
   supportDetails: {
     supportType: {
       type: [String],
-      enum: ['Email', 'Phone', 'Live Chat', 'Forum', 'Mentor', 'Slack community', 'Weekly live office hours', 'Dedicated mentor support'],
-      default: ['Email']
+      enum: ['Email', 'Phone', 'Live Chat', 'Forum', 'Mentor', 'Slack community', 'Weekly live office hours', 'Dedicated mentor support', 'Weekly feedback calls', 'Peer practice groups', 'One-to-one coaching slots'],
+      // optional
     },
     supportHours: {
       type: String,
