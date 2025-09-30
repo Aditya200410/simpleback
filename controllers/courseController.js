@@ -78,6 +78,41 @@ const normalizeSupportType = (value) => {
   return ciMatch || null;
 };
 
+// Normalize learning modes to match enum in Course model
+const allowedLearningModes = [
+  'Live Online',
+  'Self-Paced',
+  'Classroom',
+  'Hybrid',
+  'Instructor-Led',
+  'Live Instructor-Led',
+  'Self-Practice'
+];
+
+const learningModeAliasMap = {
+  'project-based': 'Self-Practice',
+  'project based': 'Self-Practice',
+  'project led': 'Self-Practice',
+  'projects': 'Self-Practice',
+  'live instructor led': 'Live Instructor-Led',
+  'instructor led': 'Instructor-Led',
+  'self practice': 'Self-Practice',
+  'self paced': 'Self-Paced',
+  'virtual live': 'Live Online'
+};
+
+const normalizeLearningMode = (value) => {
+  if (!value || typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (allowedLearningModes.includes(trimmed)) return trimmed;
+  const lower = trimmed.toLowerCase();
+  const mapped = learningModeAliasMap[lower];
+  if (mapped && allowedLearningModes.includes(mapped)) return mapped;
+  const ciMatch = allowedLearningModes.find(a => a.toLowerCase() === lower);
+  return ciMatch || null;
+};
+
 // Create a new course
 const createCourse = async (req, res) => {
   try {
@@ -233,6 +268,12 @@ const createCourse = async (req, res) => {
       processedCourseHighlights = courseHighlights.filter(highlight => highlight && highlight.trim());
     }
 
+    // Normalize learning mode
+    let processedLearningMode = [];
+    if (req.body.learningMode && Array.isArray(req.body.learningMode)) {
+      processedLearningMode = Array.from(new Set(req.body.learningMode.map(normalizeLearningMode).filter(Boolean)));
+    }
+
     // Normalize support details
     let processedSupportDetails = undefined;
     if (supportDetails && typeof supportDetails === 'object') {
@@ -272,6 +313,7 @@ const createCourse = async (req, res) => {
       batches: processedBatches,
       careerBenefits: processedCareerBenefits,
       courseMaterials: processedCourseMaterials,
+      ...(processedLearningMode.length ? { learningMode: processedLearningMode } : {}),
       vendor: vendor || '',
       certificationBody: certificationBody || '',
       certificationName: certificationName || '',
@@ -526,6 +568,12 @@ const updateCourse = async (req, res) => {
     // Process course highlights
     if (courseHighlights !== undefined) {
       course.courseHighlights = Array.isArray(courseHighlights) ? courseHighlights.filter(highlight => highlight && highlight.trim()) : [];
+    }
+
+    // Normalize learning mode
+    if (req.body.learningMode !== undefined) {
+      const lm = Array.isArray(req.body.learningMode) ? req.body.learningMode : [];
+      course.learningMode = Array.from(new Set(lm.map(normalizeLearningMode).filter(Boolean)));
     }
 
     // Normalize and set support details
