@@ -207,17 +207,24 @@ const courseSchema = new mongoose.Schema({
   vendor: {
     type: String,
     trim: true,
-    maxlength: [100, 'Vendor name cannot exceed 100 characters']
+    maxlength: [100, 'Vendor name cannot exceed 100 characters'],
+    default: 'CyberAtrix',
+    // Treat empty strings as undefined so default applies
+    set: v => (v && v.trim() !== '' ? v : undefined)
   },
   certificationBody: {
     type: String,
     trim: true,
-    maxlength: [100, 'Certification body cannot exceed 100 characters']
+    maxlength: [100, 'Certification body cannot exceed 100 characters'],
+    default: 'CyberAtrix',
+    // Treat empty strings as undefined so default applies
+    set: v => (v && v.trim() !== '' ? v : undefined)
   },
   certificationName: {
     type: String,
     trim: true,
-    maxlength: [200, 'Certification name cannot exceed 200 characters']
+    maxlength: [200, 'Certification name cannot exceed 200 characters'],
+    default:'CyberAtrix'
   },
   examDetails: {
     examFormat: {
