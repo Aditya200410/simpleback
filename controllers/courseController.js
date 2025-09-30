@@ -31,6 +31,53 @@ const ensureUniqueSlug = async (baseSlug, excludeId = null) => {
   }
 };
 
+// Normalize support types to match enum in Course model
+const allowedSupportTypes = [
+  'Email',
+  'Phone',
+  'Live Chat',
+  'Forum',
+  'Mentor',
+  'Slack community',
+  'Weekly live office hours',
+  'Dedicated mentor support',
+  'Weekly feedback calls',
+  'Peer practice groups',
+  'One-to-one coaching slots'
+];
+
+const supportTypeAliasMap = {
+  'live q&a': 'Weekly live office hours',
+  'live q & a': 'Weekly live office hours',
+  'q&a live': 'Weekly live office hours',
+  'qa live': 'Weekly live office hours',
+  'office hours': 'Weekly live office hours',
+  'tool-specific office hours': 'Weekly live office hours',
+  'tool specific office hours': 'Weekly live office hours',
+  'slack': 'Slack community',
+  'slack community': 'Slack community',
+  'mentor support': 'Dedicated mentor support',
+  'dedicated mentor': 'Dedicated mentor support',
+  '1:1 coaching': 'One-to-one coaching slots',
+  'one to one coaching': 'One-to-one coaching slots',
+  'one-on-one coaching': 'One-to-one coaching slots',
+  'peer groups': 'Peer practice groups',
+  'weekly feedback': 'Weekly feedback calls',
+  'chat': 'Live Chat'
+};
+
+const normalizeSupportType = (value) => {
+  if (!value || typeof value !== 'string') return null;
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  if (allowedSupportTypes.includes(trimmed)) return trimmed;
+  const lower = trimmed.toLowerCase();
+  const mapped = supportTypeAliasMap[lower];
+  if (mapped && allowedSupportTypes.includes(mapped)) return mapped;
+  const ciMatch = allowedSupportTypes.find(a => a.toLowerCase() === lower);
+  return ciMatch || null;
+};
+
 // Create a new course
 const createCourse = async (req, res) => {
   try {
@@ -59,7 +106,8 @@ const createCourse = async (req, res) => {
       vendor,
       certificationBody,
       certificationName,
-      courseHighlights
+      courseHighlights,
+      supportDetails
     } = req.body;
 
     // Validate required fields
@@ -185,6 +233,17 @@ const createCourse = async (req, res) => {
       processedCourseHighlights = courseHighlights.filter(highlight => highlight && highlight.trim());
     }
 
+    // Normalize support details
+    let processedSupportDetails = undefined;
+    if (supportDetails && typeof supportDetails === 'object') {
+      const inputTypes = Array.isArray(supportDetails.supportType) ? supportDetails.supportType : [];
+      const normalizedTypes = Array.from(new Set(inputTypes.map(normalizeSupportType).filter(Boolean)));
+      processedSupportDetails = {
+        supportType: normalizedTypes,
+        supportHours: supportDetails.supportHours || ''
+      };
+    }
+
     // Generate unique slug
     const baseSlug = generateSlug(courseName);
     const uniqueSlug = await ensureUniqueSlug(baseSlug);
@@ -217,6 +276,7 @@ const createCourse = async (req, res) => {
       certificationBody: certificationBody || '',
       certificationName: certificationName || '',
       courseHighlights: processedCourseHighlights,
+      ...(processedSupportDetails ? { supportDetails: processedSupportDetails } : {}),
       createdBy: req.userId
     });
 
@@ -466,6 +526,17 @@ const updateCourse = async (req, res) => {
     // Process course highlights
     if (courseHighlights !== undefined) {
       course.courseHighlights = Array.isArray(courseHighlights) ? courseHighlights.filter(highlight => highlight && highlight.trim()) : [];
+    }
+
+    // Normalize and set support details
+    if (req.body.supportDetails !== undefined) {
+      const sd = req.body.supportDetails || {};
+      const inputTypes = Array.isArray(sd.supportType) ? sd.supportType : [];
+      const normalizedTypes = Array.from(new Set(inputTypes.map(normalizeSupportType).filter(Boolean)));
+      course.supportDetails = {
+        supportType: normalizedTypes,
+        supportHours: sd.supportHours || ''
+      };
     }
 
     await course.save();
