@@ -43,6 +43,24 @@ const getAllSolutionCategories = async (req, res) => {
   }
 };
 
+// Get public solution categories (active only)
+const getPublicSolutionCategories = async (req, res) => {
+  try {
+    const categories = await SolutionCategory.find({ status: 'Active' })
+      .select('name description')
+      .sort({ name: 1 });
+    
+    res.json({ 
+      success: true, 
+      categories: categories.map(cat => cat.name), // Return just the names for frontend
+      total: categories.length 
+    });
+  } catch (error) {
+    console.error('Get public solution categories error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch solution categories' });
+  }
+};
+
 // Get category by ID
 const getSolutionCategoryById = async (req, res) => {
   try {
@@ -115,7 +133,8 @@ module.exports = {
   getAllSolutionCategories,
   getSolutionCategoryById,
   updateSolutionCategory,
-  deleteSolutionCategory
+  deleteSolutionCategory,
+  getPublicSolutionCategories
 };
 
 

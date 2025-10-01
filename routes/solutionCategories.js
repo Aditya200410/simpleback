@@ -6,10 +6,15 @@ const {
   getAllSolutionCategories,
   getSolutionCategoryById,
   updateSolutionCategory,
-  deleteSolutionCategory
+  deleteSolutionCategory,
+  getPublicSolutionCategories
 } = require('../controllers/solutionCategoryController');
 
-// All routes require authentication
+// Public routes (no authentication required)
+// GET /api/solution-categories/public - Get all active categories (public access)
+router.get('/public', getPublicSolutionCategories);
+
+// Private routes (authentication required)
 router.use(auth);
 
 // GET /api/solution-categories - Get all categories
