@@ -10,6 +10,9 @@ const createSolution = async (req, res) => {
       detailedDescription,
       icon,
       duration,
+      complexity,
+      status,
+      targetAudience,
       features,
       benefits,
       process,
@@ -26,10 +29,10 @@ const createSolution = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!title || !category || !shortDescription || !detailedDescription || !duration) {
+    if (!title || !category || !shortDescription || !detailedDescription || !duration || !complexity || !targetAudience) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields: title, category, shortDescription, detailedDescription, duration'
+        message: 'Required fields: title, category, shortDescription, detailedDescription, duration, complexity, targetAudience'
       });
     }
 
@@ -126,6 +129,9 @@ const createSolution = async (req, res) => {
       detailedDescription,
       icon: icon || '🛡️',
       duration,
+      complexity,
+      status: status || 'Active',
+      targetAudience,
       features: processedFeatures,
       benefits: processedBenefits,
       process: processedProcess,
@@ -235,22 +241,40 @@ const getSolutionBySlug = async (req, res) => {
 // Update solution
 const updateSolution = async (req, res) => {
   try {
-    const { 
-      solutionName, 
-      category, 
-      description, 
-      price, 
-      duration, 
-      status,
+    const {
+      // New preferred fields
+      title,
+      category,
       shortDescription,
-      complexity,
+      detailedDescription,
+      icon,
+      duration,
       features,
-      targetAudience,
+      benefits,
+      process,
+      requirements,
       deliverables,
-      faq
+      pricing,
+      paymentDetails,
+      industry,
+      compliance,
+      faqs,
+      caseStudies,
+      relatedSolutions,
+      relatedServices,
+      isActive,
+      priority,
+      // Legacy/backward-compat fields
+      solutionName,
+      description,
+      price,
+      status,
+      complexity,
+      targetAudience
     } = req.body;
 
-    const solution = await Solution.findById(req.params.id);
+    const { id } = req.params;
+    const solution = await Solution.findById(id);
 
     if (!solution) {
       return res.status(404).json({
@@ -259,34 +283,141 @@ const updateSolution = async (req, res) => {
       });
     }
 
-    // Update fields
-    if (solutionName) solution.solutionName = solutionName;
+    // Helper to ensure unique slug when title changes
+    const generateSlug = (text) => text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+
+    const ensureUniqueSlug = async (baseSlug, currentId) => {
+      let finalSlug = baseSlug;
+      let counter = 1;
+      // exclude current document when checking uniqueness
+      // eslint-disable-next-line no-constant-condition
+      while (await Solution.findOne({ slug: finalSlug, _id: { $ne: currentId } })) {
+        finalSlug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+      return finalSlug;
+    };
+
+    // Title and slug handling (prefer new title, fallback to legacy solutionName)
+    if (title || solutionName) {
+      const newTitle = title || solutionName;
+      if (newTitle && newTitle !== solution.title) {
+        solution.title = newTitle;
+        const baseSlug = generateSlug(newTitle);
+        solution.slug = await ensureUniqueSlug(baseSlug, id);
+      }
+    }
+
+    // Simple fields
     if (category) solution.category = category;
-    if (description) solution.description = description;
-    if (price) solution.price = price;
-    if (duration) solution.duration = duration;
-    if (status) solution.status = status;
     if (shortDescription !== undefined) solution.shortDescription = shortDescription;
-    if (complexity) solution.complexity = complexity;
+    if (detailedDescription !== undefined) solution.detailedDescription = detailedDescription || description || solution.detailedDescription;
+    if (icon) solution.icon = icon;
+    if (duration) solution.duration = duration;
+    if (isActive !== undefined) solution.isActive = isActive;
+    if (priority !== undefined) solution.priority = priority;
+
+    // Back-compat simple fields that are not in schema will be ignored by mongoose if not defined
+    if (status !== undefined) solution.status = status;
+    if (complexity !== undefined) solution.complexity = complexity;
     if (targetAudience !== undefined) solution.targetAudience = targetAudience;
 
-    // Process features array
+    // Arrays and nested structures
     if (features !== undefined) {
-      solution.features = Array.isArray(features) 
-        ? features.filter(feature => feature && feature.trim())
-        : features.split(',').map(feature => feature.trim()).filter(feature => feature);
+      solution.features = Array.isArray(features)
+        ? features.filter(item => item && String(item).trim())
+        : String(features).split(',').map(s => s.trim()).filter(Boolean);
     }
 
-    // Process deliverables array
+    if (requirements !== undefined) {
+      solution.requirements = Array.isArray(requirements)
+        ? requirements.filter(item => item && String(item).trim())
+        : String(requirements).split(',').map(s => s.trim()).filter(Boolean);
+    }
+
     if (deliverables !== undefined) {
-      solution.deliverables = Array.isArray(deliverables) 
-        ? deliverables.filter(deliverable => deliverable && deliverable.trim())
-        : deliverables.split(',').map(deliverable => deliverable.trim()).filter(deliverable => deliverable);
+      solution.deliverables = Array.isArray(deliverables)
+        ? deliverables.filter(item => item && String(item).trim())
+        : String(deliverables).split(',').map(s => s.trim()).filter(Boolean);
     }
 
-    // Process FAQ array
-    if (faq !== undefined) {
-      solution.faq = Array.isArray(faq) ? faq.filter(item => item.question && item.answer) : [];
+    if (benefits !== undefined && Array.isArray(benefits)) {
+      solution.benefits = benefits.filter(b => b && b.title && b.description);
+    }
+
+    if (process !== undefined && Array.isArray(process)) {
+      solution.process = process.filter(p => p && p.step !== undefined && p.title && p.description);
+    }
+
+    if (industry !== undefined) {
+      solution.industry = Array.isArray(industry)
+        ? industry.filter(item => item && String(item).trim())
+        : String(industry).split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    if (compliance !== undefined) {
+      solution.compliance = Array.isArray(compliance)
+        ? compliance.filter(item => item && String(item).trim())
+        : String(compliance).split(',').map(s => s.trim()).filter(Boolean);
+    }
+
+    // FAQs (new field name)
+    if (faqs !== undefined) {
+      solution.faqs = Array.isArray(faqs) ? faqs.filter(item => item && item.question && item.answer) : [];
+    }
+
+    // Backward compatibility: if legacy 'faq' is provided, map to 'faqs'
+    if (req.body.faq !== undefined && faqs === undefined) {
+      const legacyFaq = req.body.faq;
+      solution.faqs = Array.isArray(legacyFaq) ? legacyFaq.filter(item => item && item.question && item.answer) : [];
+    }
+
+    if (caseStudies !== undefined && Array.isArray(caseStudies)) {
+      solution.caseStudies = caseStudies.filter(cs => cs && cs.title && cs.description);
+    }
+
+    if (relatedSolutions !== undefined) {
+      solution.relatedSolutions = Array.isArray(relatedSolutions) ? relatedSolutions.filter(Boolean) : [];
+    }
+
+    if (relatedServices !== undefined) {
+      solution.relatedServices = Array.isArray(relatedServices) ? relatedServices.filter(Boolean) : [];
+    }
+
+    // Pricing: prefer full object; also support legacy 'price'
+    if (pricing !== undefined) {
+      const nextPricing = {
+        startingFrom: pricing?.startingFrom ?? solution.pricing?.startingFrom ?? null,
+        currency: pricing?.currency || solution.pricing?.currency || 'INR',
+        includes: Array.isArray(pricing?.includes) ? pricing.includes : (solution.pricing?.includes || []),
+        excludes: Array.isArray(pricing?.excludes) ? pricing.excludes : (solution.pricing?.excludes || [])
+      };
+      solution.pricing = nextPricing;
+    }
+
+    if (price !== undefined) {
+      solution.pricing = {
+        startingFrom: price,
+        currency: solution.pricing?.currency || 'INR',
+        includes: solution.pricing?.includes || [],
+        excludes: solution.pricing?.excludes || []
+      };
+    }
+
+    if (paymentDetails !== undefined) {
+      solution.paymentDetails = {
+        moneyBackGuarantee: paymentDetails?.moneyBackGuarantee ?? solution.paymentDetails?.moneyBackGuarantee,
+        emiFacilities: paymentDetails?.emiFacilities ?? solution.paymentDetails?.emiFacilities,
+        termsAndConditions: paymentDetails?.termsAndConditions ?? solution.paymentDetails?.termsAndConditions
+      };
+    }
+
+    // Track updater if available
+    if (req.userId) {
+      solution.updatedBy = req.userId;
     }
 
     await solution.save();

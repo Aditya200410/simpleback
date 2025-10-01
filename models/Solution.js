@@ -120,6 +120,22 @@ const solutionSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  complexity: {
+    type: String,
+    enum: ['Basic', 'Intermediate', 'Advanced', 'Enterprise'],
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['Draft', 'Active', 'Completed', 'Archived'],
+    default: 'Active'
+  },
+  targetAudience: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: [500, 'Target audience description cannot exceed 500 characters']
+  },
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
