@@ -1,4 +1,5 @@
 const Enrollment = require('../models/Enrollment');
+const Certificate = require('../models/Certificate');
 const Course = require('../models/Course');
 const GRCService = require('../models/GRCService');
 const Solution = require('../models/Solution');
@@ -414,7 +415,7 @@ const updateEnrollmentProgress = async (req, res) => {
   }
 };
 
-// Generate certificate for completed enrollment
+// Generate certificate request for completed enrollment and send to approval
 const generateCertificate = async (req, res) => {
   try {
     const enrollmentId = req.params.id;
@@ -432,26 +433,75 @@ const generateCertificate = async (req, res) => {
     if (enrollment.status !== 'Completed') {
       return res.status(400).json({
         success: false,
-        message: 'Certificate can only be generated for completed enrollments'
+        message: 'Certificate can only be requested for completed enrollments'
       });
     }
 
-    if (enrollment.certificateIssued) {
+    // Certificates are currently supported for course enrollments only
+    if (!enrollment.courseId) {
       return res.status(400).json({
         success: false,
-        message: 'Certificate has already been issued for this enrollment'
+        message: 'Certificate requests are only available for course enrollments'
       });
     }
 
-    // Generate certificate
-    await enrollment.generateCertificate();
+    // Check if a certificate already exists for this student and course
+    const existingCertificate = await Certificate.findOne({
+      studentEmail: enrollment.email.toLowerCase(),
+      courseId: enrollment.courseId
+    });
+
+    if (existingCertificate) {
+      // Link to enrollment if not already linked
+      if (!enrollment.certificateIssued) {
+        enrollment.certificateIssued = true;
+        enrollment.certificateIssuedDate = new Date();
+        enrollment.certificateId = existingCertificate._id.toString();
+        await enrollment.save();
+      }
+
+      return res.json({
+        success: true,
+        message: 'Certificate request already exists and is available in approval',
+        certificate: {
+          certificateId: enrollment.certificateId,
+          status: existingCertificate.status,
+          studentName: enrollment.fullName,
+          courseName: enrollment.courseName
+        }
+      });
+    }
+
+    // Create a new pending certificate request for approval
+    const certificate = new Certificate({
+      studentName: enrollment.fullName,
+      studentId: enrollment.enrollmentId, // human-readable enrollment id
+      studentEmail: enrollment.email.toLowerCase(),
+      studentPhone: enrollment.phone,
+      certificateName: `Certificate of Completion - ${enrollment.courseName}`,
+      courseId: enrollment.courseId,
+      courseName: enrollment.courseName,
+      // default status is 'Pending' per schema
+      createdBy: req.userId
+    });
+
+    await certificate.save();
+
+    // Link the enrollment to this certificate request so UI hides the button
+    enrollment.certificateIssued = true;
+    enrollment.certificateIssuedDate = new Date();
+    enrollment.certificateId = certificate._id.toString();
+    await enrollment.save();
+
+    // Populate minimal references for response
+    await certificate.populate('courseId', 'courseName category');
 
     res.json({
       success: true,
-      message: 'Certificate generated successfully',
+      message: 'Certificate request created and sent for approval',
       certificate: {
         certificateId: enrollment.certificateId,
-        issuedDate: enrollment.certificateIssuedDate,
+        status: certificate.status,
         studentName: enrollment.fullName,
         courseName: enrollment.courseName
       }
@@ -460,7 +510,7 @@ const generateCertificate = async (req, res) => {
     console.error('Generate certificate error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to generate certificate'
+      message: 'Failed to create certificate request'
     });
   }
 };
@@ -645,7 +695,17 @@ const createGRCServiceEnrollment = async (req, res) => {
     if (existingEnrollment) {
       return res.status(400).json({
         success: false,
-        message: 'You have already requested this GRC service'
+        message: 'You have already requested this GRC service',
+        enrollment: {
+          id: existingEnrollment._id,
+          enrollmentId: existingEnrollment.enrollmentId,
+          fullName: existingEnrollment.fullName,
+          email: existingEnrollment.email,
+          serviceName: existingEnrollment.grcServiceName,
+          status: existingEnrollment.status,
+          paymentStatus: existingEnrollment.paymentStatus,
+          enrollmentDate: existingEnrollment.enrollmentDate
+        }
       });
     }
 
