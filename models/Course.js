@@ -33,6 +33,10 @@ const courseSchema = new mongoose.Schema({
         required: [true, 'Online amount is required'],
         min: [0, 'Online amount must be positive']
       },
+      hasEMI: {
+        type: Boolean,
+        default: false
+      },
       description: {
         type: [String],
         required: [true, 'Online description is required']
@@ -43,6 +47,15 @@ const courseSchema = new mongoose.Schema({
         type: Number,
         required: [true, 'Offline amount is required'],
         min: [0, 'Offline amount must be positive']
+      },
+      status: {
+        type: String,
+        enum: ['coming_soon', 'opened', 'not_available'],
+        default: 'not_available'
+      },
+      location: {
+        type: String,
+        default: ''
       },
       description: {
         type: [String],
