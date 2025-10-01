@@ -356,7 +356,7 @@ const courseSchema = new mongoose.Schema({
   }],
   courseFormat: {
     type: String,
-    enum: ['Video', 'Live Sessions', 'Text', 'Interactive', 'Mixed', 'Hybrid', 'Live & Practical'],
+    enum: ['Video', 'Live Sessions', 'Text', 'Interactive', 'Mixed', 'Hybrid', 'Live & Practical', 'Project-Based'],
     // optional
   },
   accessDuration: {

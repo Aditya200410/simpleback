@@ -95,7 +95,7 @@ const courseUpdates = [
     }
   },
   {
-    courseName: 'SOC 2 Practitioner',
+    courseName: 'SOC 2 Practitioner with Training Project',
     updates: {
       'pricing.online.amount': 30000,
       'pricing.online.hasEMI': true,
