@@ -8,7 +8,9 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb+srv://lightyagami98k:UN1cr0
   useUnifiedTopology: true,
 });
 
-const grcServices = [
+// Complete list of all GRC Services
+const allGRCServices = [
+  // Information Security, Privacy, and IT Services
   {
     title: "ISO 27001: Information Security Management Systems (ISMS) Consultation and Certification",
     slug: "iso-27001-information-security-management-systems-isms-consultation-certification",
@@ -212,12 +214,216 @@ const grcServices = [
     relatedServices: [],
     isActive: true,
     priority: 1
+  },
+  {
+    title: "ISO 27701: Privacy Information Management Systems (PIMS) Consultation and Certification",
+    slug: "iso-27701-privacy-information-management-systems-pims-consultation-certification",
+    category: "Consultation and Certification services",
+    shortDescription: "Specialized ISO 27701 PIMS implementation and certification services to establish comprehensive privacy management systems that ensure compliance with global data protection regulations and build customer trust.",
+    detailedDescription: "Our ISO 27701 Privacy Information Management Systems (PIMS) consultation and certification services help organizations implement robust privacy management frameworks that extend ISO 27001 ISMS to include privacy-specific requirements. This comprehensive service covers the implementation of privacy controls, data protection measures, and compliance with international privacy standards including GDPR, CCPA, and other regional data protection laws. Our expert privacy consultants work with your organization to establish privacy governance structures, implement privacy-by-design principles, conduct privacy impact assessments, and develop comprehensive data protection policies. We guide you through the entire certification process, ensuring your privacy management system meets the highest international standards while providing practical, implementable solutions for ongoing privacy compliance.",
+    icon: "🛡️",
+    features: [
+      "Privacy governance framework establishment",
+      "Privacy impact assessment (PIA) implementation",
+      "Data protection policy development",
+      "Privacy-by-design process integration",
+      "Data subject rights management system",
+      "Privacy breach notification procedures",
+      "Data processing activity mapping",
+      "Privacy training and awareness programs",
+      "Third-party privacy risk management",
+      "Privacy monitoring and measurement systems"
+    ],
+    benefits: [
+      {
+        title: "Global Privacy Compliance",
+        description: "Achieve compliance with major privacy regulations including GDPR, CCPA, PIPEDA, and other international data protection laws."
+      },
+      {
+        title: "Enhanced Customer Trust",
+        description: "Demonstrate commitment to privacy protection, building stronger relationships with customers and stakeholders."
+      },
+      {
+        title: "Reduced Privacy Risks",
+        description: "Implement systematic approach to identify, assess, and mitigate privacy risks across all data processing activities."
+      },
+      {
+        title: "Competitive Differentiation",
+        description: "Stand out in the market with certified privacy management capabilities, especially important for B2B services."
+      },
+      {
+        title: "Operational Efficiency",
+        description: "Streamline privacy processes and reduce time spent on compliance activities through systematic management approach."
+      },
+      {
+        title: "Legal Protection",
+        description: "Reduce legal risks and potential fines by demonstrating proactive privacy management and compliance efforts."
+      }
+    ],
+    process: [
+      {
+        step: 1,
+        title: "Privacy Assessment and Gap Analysis",
+        description: "Evaluate current privacy practices, identify gaps against ISO 27701 requirements, and assess compliance with applicable privacy laws.",
+        duration: "2-3 weeks"
+      },
+      {
+        step: 2,
+        title: "PIMS Framework Design",
+        description: "Design privacy management framework, establish privacy governance structure, and define roles and responsibilities.",
+        duration: "3-4 weeks"
+      },
+      {
+        step: 3,
+        title: "Privacy Controls Implementation",
+        description: "Implement privacy-specific controls, develop data protection policies, and establish privacy monitoring processes.",
+        duration: "4-6 weeks"
+      },
+      {
+        step: 4,
+        title: "Data Processing Mapping",
+        description: "Map all data processing activities, conduct privacy impact assessments, and implement privacy-by-design processes.",
+        duration: "3-4 weeks"
+      },
+      {
+        step: 5,
+        title: "Training and Awareness",
+        description: "Conduct privacy training programs, establish awareness campaigns, and ensure staff competency in privacy management.",
+        duration: "2-3 weeks"
+      },
+      {
+        step: 6,
+        title: "Internal Audit and Review",
+        description: "Conduct internal privacy audits, perform management review, and address any identified non-conformities.",
+        duration: "2-3 weeks"
+      },
+      {
+        step: 7,
+        title: "Certification Preparation and Audit",
+        description: "Prepare for certification audit, support audit process, and achieve ISO 27701 certification.",
+        duration: "2-3 weeks"
+      }
+    ],
+    requirements: [
+      "Existing ISO 27001 ISMS or commitment to implement both standards",
+      "Management commitment to privacy protection and compliance",
+      "Dedicated privacy team and resources",
+      "Access to all data processing activities and systems",
+      "Cooperation from legal, IT, and business teams",
+      "Budget allocation for implementation and certification",
+      "Timeline commitment of 6-9 months",
+      "Documentation of current privacy practices"
+    ],
+    deliverables: [
+      "Complete PIMS documentation package",
+      "Privacy impact assessment framework",
+      "Data protection policies and procedures",
+      "Privacy-by-design implementation guide",
+      "Data subject rights management procedures",
+      "Privacy breach notification procedures",
+      "Staff training materials and programs",
+      "Internal audit program and reports",
+      "Certification audit preparation package",
+      "ISO 27701 certificate upon successful audit"
+    ],
+    pricing: {
+      startingFrom: 200000,
+      currency: "INR",
+      includes: [
+        "Complete PIMS implementation support",
+        "All privacy documentation development",
+        "Privacy impact assessment framework",
+        "Staff training and awareness programs",
+        "Internal audit support",
+        "Certification audit preparation",
+        "12 months post-certification support"
+      ],
+      excludes: [
+        "Certification body audit fees",
+        "Legal consultation fees",
+        "Travel and accommodation expenses",
+        "Additional training beyond standard program",
+        "Software licensing costs"
+      ]
+    },
+    paymentDetails: {
+      moneyBackGuarantee: "30 days Money back guarantee",
+      emiFacilities: "EMI facilities also available 3-6 months for startups companies",
+      termsAndConditions: "*terms and conditions apply"
+    },
+    duration: "6-9 months",
+    industry: [
+      "Information Technology",
+      "Healthcare",
+      "Financial Services",
+      "E-commerce",
+      "Marketing and Advertising",
+      "Education",
+      "Government",
+      "Telecommunications",
+      "Consulting",
+      "Manufacturing"
+    ],
+    compliance: [
+      "ISO/IEC 27701:2019",
+      "GDPR",
+      "CCPA",
+      "PIPEDA",
+      "DPDP Act",
+      "LGPD",
+      "PDPA"
+    ],
+    faqs: [
+      {
+        question: "Do we need ISO 27001 before implementing ISO 27701?",
+        answer: "ISO 27701 extends ISO 27001, so you need either an existing ISO 27001 ISMS or implement both standards together. We can help with either approach."
+      },
+      {
+        question: "How does ISO 27701 help with GDPR compliance?",
+        answer: "ISO 27701 provides a systematic framework for implementing GDPR requirements, including data protection by design, privacy impact assessments, and data subject rights management."
+      },
+      {
+        question: "What is the difference between ISO 27701 and GDPR compliance?",
+        answer: "ISO 27701 is a management system standard that provides a framework for implementing privacy controls, while GDPR is a legal regulation. ISO 27701 helps implement GDPR requirements systematically."
+      },
+      {
+        question: "How long is ISO 27701 certification valid?",
+        answer: "ISO 27701 certification is valid for 3 years with annual surveillance audits, similar to ISO 27001 certification."
+      }
+    ],
+    caseStudies: [
+      {
+        title: "Tech Startup Privacy Compliance Achievement",
+        description: "A fast-growing tech startup achieved ISO 27701 certification while implementing GDPR compliance, enabling European market expansion.",
+        industry: "Information Technology",
+        results: [
+          "Achieved ISO 27701 certification in 7 months",
+          "Full GDPR compliance implementation",
+          "Successfully entered European markets",
+          "Reduced privacy-related customer concerns by 70%"
+        ]
+      },
+      {
+        title: "Healthcare Data Processor Certification",
+        description: "A healthcare data processing company achieved ISO 27701 certification to meet HIPAA and GDPR requirements for international operations.",
+        industry: "Healthcare",
+        results: [
+          "Achieved ISO 27701 certification",
+          "Enhanced HIPAA compliance",
+          "Enabled international healthcare partnerships",
+          "Reduced privacy audit findings by 85%"
+        ]
+      }
+    ],
+    relatedServices: [],
+    isActive: true,
+    priority: 2
   }
 ];
 
-async function seedGRCServices() {
+async function seedAllGRCServices() {
   try {
-    console.log('Starting GRC Services seeding...');
+    console.log('Starting comprehensive GRC Services seeding...');
     
     // Find or create a default user for createdBy field
     let defaultUser = await User.findOne({ role: 'admin' });
@@ -235,7 +441,7 @@ async function seedGRCServices() {
     console.log('Cleared existing GRC services');
 
     // Add createdBy and updatedBy to each service
-    const servicesWithUsers = grcServices.map(service => ({
+    const servicesWithUsers = allGRCServices.map(service => ({
       ...service,
       createdBy: defaultUser._id,
       updatedBy: defaultUser._id
@@ -245,7 +451,21 @@ async function seedGRCServices() {
     const insertedServices = await GRCService.insertMany(servicesWithUsers);
     console.log(`Successfully seeded ${insertedServices.length} GRC services`);
 
-    console.log('GRC Services seeding completed successfully!');
+    // Update related services references
+    for (let i = 0; i < insertedServices.length; i++) {
+      const service = insertedServices[i];
+      const relatedServices = insertedServices
+        .filter(s => s._id.toString() !== service._id.toString())
+        .slice(0, 3) // Limit to 3 related services
+        .map(s => s._id);
+      
+      await GRCService.findByIdAndUpdate(service._id, {
+        relatedServices: relatedServices
+      });
+    }
+
+    console.log('Updated related services references');
+    console.log('Comprehensive GRC Services seeding completed successfully!');
     
   } catch (error) {
     console.error('Error seeding GRC services:', error);
@@ -255,4 +475,4 @@ async function seedGRCServices() {
 }
 
 // Run the seeding function
-seedGRCServices();
+seedAllGRCServices();

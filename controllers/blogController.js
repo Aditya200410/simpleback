@@ -51,6 +51,12 @@ const createBlog = async (req, res) => {
 
     await blog.save();
 
+    // If created as published, ensure publishedAt is set
+    if (blog.status === 'published' && !blog.publishedAt) {
+      blog.publishedAt = new Date();
+      await blog.save();
+    }
+
     // Populate author info
     await blog.populate('author', 'email');
 
@@ -141,17 +147,19 @@ const getPublishedBlogs = async (req, res) => {
     } = req.query;
 
     // Build query for published posts only
-    let query = { 
-      isActive: true, 
-      status: 'published',
-      publishedAt: { $lte: new Date() }
-    };
+    const now = new Date();
+    const dateConditions = [
+      { publishedAt: { $lte: now } },
+      { publishedAt: { $exists: false } },
+      { publishedAt: null }
+    ];
 
+    // Base query ensures isActive and published status, and allows missing publishedAt
+    let query = { $and: [ { isActive: true, status: 'published' }, { $or: dateConditions } ] };
+
+    // If search provided, add it as an additional AND clause
     if (search) {
-      query.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { excerpt: { $regex: search, $options: 'i' } }
-      ];
+      query.$and.push({ $or: [ { title: { $regex: search, $options: 'i' } }, { excerpt: { $regex: search, $options: 'i' } } ] });
     }
 
     // Sort options
@@ -224,11 +232,13 @@ const getBlogBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
 
-    const blog = await Blog.findOne({ 
-      slug, 
-      isActive: true, 
+    // Allow published posts even if publishedAt is missing (for legacy/imported posts)
+    const now = new Date();
+    const blog = await Blog.findOne({
+      slug,
+      isActive: true,
       status: 'published',
-      publishedAt: { $lte: new Date() }
+      $or: [ { publishedAt: { $lte: now } }, { publishedAt: { $exists: false } }, { publishedAt: null } ]
     })
       .populate('author', 'email')
       .lean();
@@ -281,7 +291,7 @@ const updateBlog = async (req, res) => {
       });
     }
 
-    // Handle slug update if title changed
+  // Handle slug update if title changed
     if (updateData.title && updateData.title !== blog.title) {
       let baseSlug = updateData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       let slug = baseSlug;
@@ -292,6 +302,11 @@ const updateBlog = async (req, res) => {
         counter++;
       }
       updateData.slug = slug;
+    }
+
+    // If status is being changed to published and publishedAt is not set, set it now
+    if (updateData.status && updateData.status === 'published' && !blog.publishedAt) {
+      updateData.publishedAt = new Date();
     }
 
     const updatedBlog = await Blog.findByIdAndUpdate(
