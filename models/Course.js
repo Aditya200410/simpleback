@@ -380,6 +380,10 @@ const courseSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
+  },
+  order: {
+    type: Number,
+    default: 0
   }
 }, {
   timestamps: true

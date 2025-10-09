@@ -9,7 +9,8 @@ const {
   updateGRCService,
   deleteGRCService,
   toggleGRCServiceStatus,
-  getGRCServiceCategories
+  getGRCServiceCategories,
+  reorderGRCServices
 } = require('../controllers/grcServiceController');
 
 // Public routes (no authentication required)
@@ -23,5 +24,6 @@ router.post('/', auth, createGRCService);
 router.put('/:id', auth, updateGRCService);
 router.delete('/:id', auth, deleteGRCService);
 router.patch('/:id/toggle-status', auth, toggleGRCServiceStatus);
+router.post('/reorder', auth, reorderGRCServices);
 
 module.exports = router;

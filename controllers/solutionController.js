@@ -169,7 +169,7 @@ const getAllSolutions = async (req, res) => {
   try {
     const solutions = await Solution.find()
       .populate('createdBy', 'email')
-      .sort({ createdAt: -1 });
+      .sort({ priority: -1, createdAt: -1 });
 
     res.json({
       success: true,
@@ -463,11 +463,45 @@ const deleteSolution = async (req, res) => {
   }
 };
 
+// Reorder solutions
+const reorderSolutions = async (req, res) => {
+  try {
+    const { solutions } = req.body; // Array of { id, priority }
+
+    if (!Array.isArray(solutions)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Solutions must be an array'
+      });
+    }
+
+    // Update priority for each solution
+    const updatePromises = solutions.map(({ id, priority }) =>
+      Solution.findByIdAndUpdate(id, { priority }, { new: true })
+    );
+
+    await Promise.all(updatePromises);
+
+    res.json({
+      success: true,
+      message: 'Solutions reordered successfully'
+    });
+  } catch (error) {
+    console.error('Error reordering solutions:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error reordering solutions',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createSolution,
   getAllSolutions,
   getSolutionById,
   getSolutionBySlug,
   updateSolution,
-  deleteSolution
+  deleteSolution,
+  reorderSolutions
 };

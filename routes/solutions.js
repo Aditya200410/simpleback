@@ -1,5 +1,5 @@
 const express = require('express');
-const { createSolution, getAllSolutions, getSolutionById, getSolutionBySlug, updateSolution, deleteSolution } = require('../controllers/solutionController');
+const { createSolution, getAllSolutions, getSolutionById, getSolutionBySlug, updateSolution, deleteSolution, reorderSolutions } = require('../controllers/solutionController');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -47,5 +47,10 @@ router.put('/:id', updateSolution);
 // @desc    Delete solution
 // @access  Private
 router.delete('/:id', deleteSolution);
+
+// @route   POST /api/solutions/reorder
+// @desc    Reorder solutions
+// @access  Private
+router.post('/reorder', reorderSolutions);
 
 module.exports = router;

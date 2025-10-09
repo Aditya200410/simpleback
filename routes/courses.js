@@ -1,5 +1,5 @@
 const express = require('express');
-const { createCourse, getAllCourses, getCourseById, getCourseBySlug, updateCourse, deleteCourse, searchCourses } = require('../controllers/courseController');
+const { createCourse, getAllCourses, getCourseById, getCourseBySlug, updateCourse, deleteCourse, searchCourses, reorderCourses } = require('../controllers/courseController');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -52,5 +52,10 @@ router.put('/:id', updateCourse);
 // @desc    Delete course
 // @access  Private
 router.delete('/:id', deleteCourse);
+
+// @route   POST /api/courses/reorder
+// @desc    Reorder courses
+// @access  Private
+router.post('/reorder', reorderCourses);
 
 module.exports = router;

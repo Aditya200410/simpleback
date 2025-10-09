@@ -343,7 +343,7 @@ const getAllCourses = async (req, res) => {
   try {
     const courses = await Course.find()
       .populate('createdBy', 'email')
-      .sort({ createdAt: -1 });
+      .sort({ order: -1, createdAt: -1 });
 
     res.json({
       success: true,
@@ -688,6 +688,39 @@ const deleteCourse = async (req, res) => {
   }
 };
 
+// Reorder courses
+const reorderCourses = async (req, res) => {
+  try {
+    const { courses } = req.body; // Array of { id, order }
+
+    if (!Array.isArray(courses)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Courses must be an array'
+      });
+    }
+
+    // Update order for each course
+    const updatePromises = courses.map(({ id, order }) =>
+      Course.findByIdAndUpdate(id, { order }, { new: true })
+    );
+
+    await Promise.all(updatePromises);
+
+    res.json({
+      success: true,
+      message: 'Courses reordered successfully'
+    });
+  } catch (error) {
+    console.error('Error reordering courses:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error reordering courses',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createCourse,
   getAllCourses,
@@ -695,5 +728,6 @@ module.exports = {
   getCourseBySlug,
   updateCourse,
   deleteCourse,
-  searchCourses
+  searchCourses,
+  reorderCourses
 };

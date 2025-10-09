@@ -356,6 +356,39 @@ const getGRCServiceCategories = async (req, res) => {
   }
 };
 
+// Reorder GRC services
+const reorderGRCServices = async (req, res) => {
+  try {
+    const { services } = req.body; // Array of { id, priority }
+
+    if (!Array.isArray(services)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Services must be an array'
+      });
+    }
+
+    // Update priority for each service
+    const updatePromises = services.map(({ id, priority }) =>
+      GRCService.findByIdAndUpdate(id, { priority }, { new: true })
+    );
+
+    await Promise.all(updatePromises);
+
+    res.json({
+      success: true,
+      message: 'GRC services reordered successfully'
+    });
+  } catch (error) {
+    console.error('Error reordering GRC services:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error reordering GRC services',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getAllGRCServices,
   getGRCServiceById,
@@ -364,5 +397,6 @@ module.exports = {
   updateGRCService,
   deleteGRCService,
   toggleGRCServiceStatus,
-  getGRCServiceCategories
+  getGRCServiceCategories,
+  reorderGRCServices
 };
