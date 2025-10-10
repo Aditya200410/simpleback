@@ -62,7 +62,7 @@ const getAllGRCCategories = async (req, res) => {
     const categories = await GRCCategory.find(filter)
       .populate('createdBy', 'email')
       .populate('updatedBy', 'email')
-      .sort({ name: 1 });
+      .sort({ order: -1, name: 1 });
 
     res.json({
       success: true,
@@ -202,10 +202,43 @@ const deleteGRCCategory = async (req, res) => {
   }
 };
 
+// Reorder GRC categories
+const reorderGRCCategories = async (req, res) => {
+  try {
+    const { categories } = req.body;
+
+    if (!Array.isArray(categories) || categories.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Categories array is required'
+      });
+    }
+
+    // Update each category's order
+    const updatePromises = categories.map(({ id, order }) =>
+      GRCCategory.findByIdAndUpdate(id, { order }, { new: true })
+    );
+
+    await Promise.all(updatePromises);
+
+    res.json({
+      success: true,
+      message: 'GRC categories reordered successfully'
+    });
+  } catch (error) {
+    console.error('Reorder GRC categories error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reorder GRC categories'
+    });
+  }
+};
+
 module.exports = {
   createGRCCategory,
   getAllGRCCategories,
   getGRCCategoryById,
   updateGRCCategory,
-  deleteGRCCategory
+  deleteGRCCategory,
+  reorderGRCCategories
 };

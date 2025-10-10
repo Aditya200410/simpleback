@@ -7,7 +7,8 @@ const {
   getSolutionCategoryById,
   updateSolutionCategory,
   deleteSolutionCategory,
-  getPublicSolutionCategories
+  getPublicSolutionCategories,
+  reorderSolutionCategories
 } = require('../controllers/solutionCategoryController');
 
 // Public routes (no authentication required)
@@ -25,6 +26,9 @@ router.get('/:id', getSolutionCategoryById);
 
 // POST /api/solution-categories - Create new category
 router.post('/', createSolutionCategory);
+
+// POST /api/solution-categories/reorder - Reorder solution categories
+router.post('/reorder', reorderSolutionCategories);
 
 // PUT /api/solution-categories/:id - Update category
 router.put('/:id', updateSolutionCategory);

@@ -6,7 +6,8 @@ const {
   getAllCategories,
   getCategoryById,
   updateCategory,
-  deleteCategory
+  deleteCategory,
+  reorderCategories
 } = require('../controllers/categoryController');
 
 // All routes require authentication
@@ -20,6 +21,9 @@ router.get('/:id', getCategoryById);
 
 // POST /api/categories - Create new category
 router.post('/', createCategory);
+
+// POST /api/categories/reorder - Reorder categories
+router.post('/reorder', reorderCategories);
 
 // PUT /api/categories/:id - Update category
 router.put('/:id', updateCategory);

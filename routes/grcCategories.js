@@ -6,7 +6,8 @@ const {
   getAllGRCCategories,
   getGRCCategoryById,
   updateGRCCategory,
-  deleteGRCCategory
+  deleteGRCCategory,
+  reorderGRCCategories
 } = require('../controllers/grcCategoryController');
 
 // All routes require authentication
@@ -20,6 +21,9 @@ router.get('/:id', getGRCCategoryById);
 
 // POST /api/grc-categories - Create new GRC category
 router.post('/', createGRCCategory);
+
+// POST /api/grc-categories/reorder - Reorder GRC categories
+router.post('/reorder', reorderGRCCategories);
 
 // PUT /api/grc-categories/:id - Update GRC category
 router.put('/:id', updateGRCCategory);

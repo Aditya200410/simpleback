@@ -35,7 +35,7 @@ const getAllSolutionCategories = async (req, res) => {
     const { status } = req.query;
     const filter = {};
     if (status) filter.status = status;
-    const categories = await SolutionCategory.find(filter).populate('createdBy', 'email').sort({ name: 1 });
+    const categories = await SolutionCategory.find(filter).populate('createdBy', 'email').sort({ order: -1, name: 1 });
     res.json({ success: true, categories, total: categories.length });
   } catch (error) {
     console.error('Get solution categories error:', error);
@@ -48,7 +48,7 @@ const getPublicSolutionCategories = async (req, res) => {
   try {
     const categories = await SolutionCategory.find({ status: 'Active' })
       .select('name description')
-      .sort({ name: 1 });
+      .sort({ order: -1, name: 1 });
     
     res.json({ 
       success: true, 
@@ -128,13 +128,46 @@ const deleteSolutionCategory = async (req, res) => {
   }
 };
 
+// Reorder solution categories
+const reorderSolutionCategories = async (req, res) => {
+  try {
+    const { categories } = req.body;
+
+    if (!Array.isArray(categories) || categories.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Categories array is required'
+      });
+    }
+
+    // Update each category's order
+    const updatePromises = categories.map(({ id, order }) =>
+      SolutionCategory.findByIdAndUpdate(id, { order }, { new: true })
+    );
+
+    await Promise.all(updatePromises);
+
+    res.json({
+      success: true,
+      message: 'Solution categories reordered successfully'
+    });
+  } catch (error) {
+    console.error('Reorder solution categories error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reorder solution categories'
+    });
+  }
+};
+
 module.exports = {
   createSolutionCategory,
   getAllSolutionCategories,
   getSolutionCategoryById,
   updateSolutionCategory,
   deleteSolutionCategory,
-  getPublicSolutionCategories
+  getPublicSolutionCategories,
+  reorderSolutionCategories
 };
 
 
