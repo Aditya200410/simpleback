@@ -7,10 +7,15 @@ const {
   getCategoryById,
   updateCategory,
   deleteCategory,
+  getPublicCategories,
   reorderCategories
 } = require('../controllers/categoryController');
 
-// All routes require authentication
+// Public routes (no authentication required)
+// GET /api/categories/public - Get all active categories (public access)
+router.get('/public', getPublicCategories);
+
+// All routes below require authentication
 router.use(auth);
 
 // GET /api/categories - Get all categories

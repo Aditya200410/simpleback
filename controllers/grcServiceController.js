@@ -340,11 +340,14 @@ const toggleGRCServiceStatus = async (req, res) => {
 // Get GRC service categories
 const getGRCServiceCategories = async (req, res) => {
   try {
-    const categories = await GRCService.distinct('category', { isActive: true });
+    const GRCCategory = require('../models/GRCCategory');
+    const categories = await GRCCategory.find({ status: 'Active' })
+      .select('name')
+      .sort({ order: -1, name: 1 });
     
     res.json({
       success: true,
-      data: categories
+      data: categories.map(cat => cat.name)
     });
   } catch (error) {
     console.error('Error fetching GRC service categories:', error);

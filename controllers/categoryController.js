@@ -193,6 +193,27 @@ const deleteCategory = async (req, res) => {
   }
 };
 
+// Get public categories (active only)
+const getPublicCategories = async (req, res) => {
+  try {
+    const categories = await Category.find({ status: 'Active' })
+      .select('name description')
+      .sort({ order: -1, name: 1 });
+    
+    res.json({ 
+      success: true, 
+      categories: categories.map(cat => cat.name),
+      total: categories.length 
+    });
+  } catch (error) {
+    console.error('Get public categories error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch categories' 
+    });
+  }
+};
+
 // Reorder categories
 const reorderCategories = async (req, res) => {
   try {
@@ -231,5 +252,6 @@ module.exports = {
   getCategoryById,
   updateCategory,
   deleteCategory,
+  getPublicCategories,
   reorderCategories
 };
