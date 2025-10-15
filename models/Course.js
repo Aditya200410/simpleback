@@ -5,7 +5,8 @@ const courseSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Course name is required'],
     trim: true,
-    maxlength: [100, 'Course name cannot exceed 100 characters']
+    maxlength: [100, 'Course name cannot exceed 100 characters'],
+    match: [/^[A-Za-z\s]+$/, 'Course name can only contain letters and spaces']
   },
   slug: {
     type: String,
@@ -156,7 +157,8 @@ const courseSchema = new mongoose.Schema({
   instructorName: {
     type: String,
     trim: true,
-    maxlength: [100, 'Instructor name cannot exceed 100 characters']
+    maxlength: [100, 'Instructor name cannot exceed 100 characters'],
+    match: [/^[A-Za-z\s]+$/, 'Instructor name can only contain letters and spaces']
   },
   instructorBio: {
     type: String,

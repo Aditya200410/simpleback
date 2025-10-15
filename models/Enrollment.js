@@ -6,7 +6,8 @@ const enrollmentSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Full name is required'],
     trim: true,
-    maxlength: [100, 'Full name cannot exceed 100 characters']
+    maxlength: [100, 'Full name cannot exceed 100 characters'],
+    match: [/^[A-Za-z\s]+$/, 'Full name can only contain letters and spaces']
   },
   email: {
     type: String,
