@@ -6,7 +6,6 @@ const courseSchema = new mongoose.Schema({
     required: [true, 'Course name is required'],
     trim: true,
     maxlength: [100, 'Course name cannot exceed 100 characters'],
-    match: [/^[A-Za-z\s]+$/, 'Course name can only contain letters and spaces']
   },
   slug: {
     type: String,
