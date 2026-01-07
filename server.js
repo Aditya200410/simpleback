@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 // Set default environment variables if not provided
@@ -31,6 +32,21 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/photo', express.static(path.join(__dirname, 'photo')));
+
+const upload = require('./middleware/upload');
+app.post('/api/upload', upload.single('image'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No file uploaded' });
+  }
+
+  const imageUrl = `/photo/${req.file.filename}`;
+  res.json({
+    success: true,
+    message: 'Image uploaded successfully',
+    imageUrl
+  });
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -52,8 +68,8 @@ app.use('/api/blogs', blogRoutes);
 
 // Health check route
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'Server is running!',
     timestamp: new Date().toISOString()
   });
@@ -156,17 +172,17 @@ app.get('/api/solutions/public/:id', async (req, res) => {
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
-  res.status(500).json({ 
-    success: false, 
-    message: 'Something went wrong!' 
+  res.status(500).json({
+    success: false,
+    message: 'Something went wrong!'
   });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ 
-    success: false, 
-    message: 'Route not found' 
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
   });
 });
 

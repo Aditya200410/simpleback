@@ -8,6 +8,7 @@ const createBlog = async (req, res) => {
       title,
       content,
       excerpt,
+      featuredImage,
       status
     } = req.body;
 
@@ -32,7 +33,7 @@ const createBlog = async (req, res) => {
     let baseSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     let slug = baseSlug;
     let counter = 1;
-    
+
     while (await Blog.findOne({ slug })) {
       slug = `${baseSlug}-${counter}`;
       counter++;
@@ -44,6 +45,7 @@ const createBlog = async (req, res) => {
       slug,
       content,
       excerpt,
+      featuredImage,
       author: req.userId,
       authorName: author.email,
       status: status || 'draft'
@@ -155,11 +157,11 @@ const getPublishedBlogs = async (req, res) => {
     ];
 
     // Base query ensures isActive and published status, and allows missing publishedAt
-    let query = { $and: [ { isActive: true, status: 'published' }, { $or: dateConditions } ] };
+    let query = { $and: [{ isActive: true, status: 'published' }, { $or: dateConditions }] };
 
     // If search provided, add it as an additional AND clause
     if (search) {
-      query.$and.push({ $or: [ { title: { $regex: search, $options: 'i' } }, { excerpt: { $regex: search, $options: 'i' } } ] });
+      query.$and.push({ $or: [{ title: { $regex: search, $options: 'i' } }, { excerpt: { $regex: search, $options: 'i' } }] });
     }
 
     // Sort options
@@ -238,7 +240,7 @@ const getBlogBySlug = async (req, res) => {
       slug,
       isActive: true,
       status: 'published',
-      $or: [ { publishedAt: { $lte: now } }, { publishedAt: { $exists: false } }, { publishedAt: null } ]
+      $or: [{ publishedAt: { $lte: now } }, { publishedAt: { $exists: false } }, { publishedAt: null }]
     })
       .populate('author', 'email')
       .lean();
@@ -291,12 +293,12 @@ const updateBlog = async (req, res) => {
       });
     }
 
-  // Handle slug update if title changed
+    // Handle slug update if title changed
     if (updateData.title && updateData.title !== blog.title) {
       let baseSlug = updateData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       let slug = baseSlug;
       let counter = 1;
-      
+
       while (await Blog.findOne({ slug, _id: { $ne: id } })) {
         slug = `${baseSlug}-${counter}`;
         counter++;
