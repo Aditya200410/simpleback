@@ -28,6 +28,9 @@ const blogRoutes = require('./routes/blogs');
 
 const app = express();
 
+// Trust proxy for Nginx/Load Balancers
+app.set('trust proxy', 1);
+
 // Middleware
 const allowedOrigins = [
   'https://www.cyberatrix.com',
@@ -39,12 +42,8 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function (origin, callback) {
-    callback(null, true);
-  },
+  origin: allowedOrigins,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
   optionsSuccessStatus: 200
 }));
 app.use(express.json());
