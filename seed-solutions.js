@@ -88,6 +88,63 @@ const solutionsData = [
     providerQualifications: "Certified in e-commerce platforms and payment systems"
   },
   {
+    solutionName: "Professional Web Development",
+    title: "Professional Web Development",
+    slug: "professional-web-development",
+    category: "Website Development",
+    description: "Custom, high-performance websites tailored to your business goals. We deliver responsive, fast-loading, and SEO-optimized websites.",
+    price: 25000,
+    duration: "2-6 weeks",
+    shortDescription: "Custom, high-performance websites tailored to your business goals",
+    detailedDescription: "Our Professional Web Development service provides end-to-end solutions for creating a powerful online presence. We specialize in building responsive, fast-loading, and SEO-optimized websites using modern frameworks like React, Next.js, and Node.js. Whether you need a corporate site, a landing page, or a complex web portal, our team ensures your digital product is secure, scalable, and user-centric.",
+    icon: "💻",
+    features: [
+      "Custom UI/UX Design",
+      "Mobile-Responsive Layout",
+      "SEO Friendly Architecture",
+      "Fast Loading Performance",
+      "Contact Form & Lead Integration",
+      "Secure Admin Dashboard",
+      "Social Media Integration"
+    ],
+    requirements: [
+      "Business logo and brand assets",
+      "Content for website pages",
+      "Domain and hosting access (can be assisted)",
+      "Specific functional requirements"
+    ],
+    deliverables: [
+      "Source code access (GitHub/GitLab)",
+      "Fully deployed production website",
+      "Admin panel credentials",
+      "Basic SEO setup",
+      "1 month post-launch support"
+    ],
+    complexity: "Intermediate",
+    targetAudience: "Startups, small to medium businesses, and individual professionals looking for a robust online presence.",
+    pricing: {
+      startingFrom: 25000,
+      currency: "INR",
+      includes: ["Design", "Development", "Deployment", "Basic SEO"],
+      excludes: ["Annual hosting fees", "Premium plugin licenses", "Content writing"]
+    },
+    faq: [
+      {
+        question: "How long does it take to build a website?",
+        answer: "A standard business website typically takes 2-4 weeks, while more complex applications may take up to 6 weeks."
+      },
+      {
+        question: "Will my website be mobile-friendly?",
+        answer: "Yes, all our websites are built with a mobile-first approach, ensuring they look great on all devices."
+      }
+    ],
+    status: "Active",
+    providerName: "Cyberatrix Solutions",
+    providerBio: "Expert web developers specialized in modern JAMstack and MERN technologies",
+    providerExperience: "10+ years in web development",
+    providerQualifications: "React, Node.js, and SEO Certification"
+  },
+  {
     solutionName: "Cloud Infrastructure Hardening",
     category: "Infra Hardening Solutions ( Cloud, Network , System)",
     description: "Comprehensive security hardening for cloud infrastructure including AWS, Azure, and Google Cloud. Network security, system hardening, and compliance implementation.",
