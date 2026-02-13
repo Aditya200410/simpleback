@@ -8,11 +8,22 @@ exports.saveConsent = async (req, res) => {
         const { preferences } = req.body;
 
         // Get IP from request
-        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        let ip = req.headers['x-forwarded-for'] || req.headers['x-real-ip'] || req.socket.remoteAddress;
+
+        // Handle array of IPs from x-forwarded-for
+        if (ip && typeof ip === 'string' && ip.includes(',')) {
+            ip = ip.split(',')[0].trim();
+        }
+
+        // Normalize local loopback addresses
+        if (ip === '::1' || ip === '::ffff:127.0.0.1' || ip === 'localhost') {
+            ip = '127.0.0.1';
+        }
+
         const userAgent = req.headers['user-agent'];
 
         const consent = await CookieConsent.create({
-            ip: Array.isArray(ip) ? ip[0] : ip,
+            ip: ip,
             userAgent,
             preferences,
             consentDate: new Date()
