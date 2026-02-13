@@ -37,6 +37,7 @@ const allowedOrigins = [
   'https://cyberatrix.com',
   'https://admin.cyberatrix.com',
   'http://localhost:3000',
+  'http://localhost:3001',
   'http://localhost:5173',
   'http://localhost:5174'
 ];
@@ -49,6 +50,7 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/photo', express.static(path.join(__dirname, 'photo')));
+app.use('/api/photo', express.static(path.join(__dirname, 'photo')));
 
 const upload = require('./middleware/upload');
 app.post('/api/upload', upload.single('image'), (req, res) => {
@@ -56,7 +58,7 @@ app.post('/api/upload', upload.single('image'), (req, res) => {
     return res.status(400).json({ success: false, message: 'No file uploaded' });
   }
 
-  const imageUrl = `/photo/${req.file.filename}`;
+  const imageUrl = `/api/photo/${req.file.filename}`;
   res.json({
     success: true,
     message: 'Image uploaded successfully',
