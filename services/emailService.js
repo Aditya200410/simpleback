@@ -267,6 +267,78 @@ const emailTemplates = {
         </div>
       `
     };
+  },
+
+  queryNotification: (query) => {
+    return {
+      subject: `New Inquiry: ${query.subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); color: white; padding: 30px; text-align: center;">
+            <h1 style="margin: 0; font-size: 28px;">New Contact Inquiry</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">CyberAtrix Professional Services</p>
+          </div>
+          
+          <div style="padding: 30px; background: #f8f9fa;">
+            <h2 style="color: #333; margin-top: 0;">Inquiry Details</h2>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h3 style="color: #3b82f6; margin-top: 0;">Contact Information</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555; width: 30%;">Name:</td>
+                  <td style="padding: 8px 0; color: #333;">${query.fullName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Email:</td>
+                  <td style="padding: 8px 0; color: #333;">${query.email}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Phone:</td>
+                  <td style="padding: 8px 0; color: #333;">${query.phone || 'Not provided'}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h3 style="color: #3b82f6; margin-top: 0;">Message Content</h3>
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555; width: 30%;">Subject:</td>
+                  <td style="padding: 8px 0; color: #333;">${query.subject}</td>
+                </tr>
+                ${query.courseName ? `
+                <tr>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Related Course:</td>
+                  <td style="padding: 8px 0; color: #333;">${query.courseName}</td>
+                </tr>
+                ` : ''}
+                ${query.grcServiceName ? `
+                <tr>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Related Service:</td>
+                  <td style="padding: 8px 0; color: #333;">${query.grcServiceName}</td>
+                </tr>
+                ` : ''}
+              </table>
+              <div style="margin-top: 20px; padding: 15px; background: #f1f5f9; border-radius: 6px; border-left: 4px solid #3b82f6;">
+                <p style="margin: 0; font-weight: bold; color: #475569; margin-bottom: 10px;">Message:</p>
+                <p style="margin: 0; color: #1e293b; line-height: 1.6; white-space: pre-wrap;">${query.question}</p>
+              </div>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.ADMIN_URL || 'http://localhost:3001'}/queries" style="background: #3b82f6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">
+                View Message in Admin Panel
+              </a>
+            </div>
+          </div>
+          
+          <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 14px;">
+            <p style="margin: 0;">© ${new Date().getFullYear()} Cyberatrix Solutions. All rights reserved.</p>
+          </div>
+        </div>
+      `
+    };
   }
 };
 
@@ -274,7 +346,7 @@ const emailTemplates = {
 const sendEmail = async (to, subject, html) => {
   try {
     const transporter = createTransporter();
-    
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: to,
@@ -314,7 +386,7 @@ const sendAdminReply = async (enrollment, replyMessage, adminName) => {
 const sendRejectionEmail = async (enrollment) => {
   const serviceName = enrollment.courseName || enrollment.grcServiceName || enrollment.solutionName;
   const serviceType = enrollment.courseName ? 'course' : enrollment.grcServiceName ? 'GRC service' : 'solution';
-  
+
   const subject = `Application Rejected - ${serviceName}`;
   const html = `
     <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;">
@@ -367,8 +439,15 @@ const sendRejectionEmail = async (enrollment) => {
       </div>
     </div>
   `;
-  
+
   return await sendEmail(enrollment.email, subject, html);
+};
+
+// Send query notification email
+const sendQueryNotification = async (query) => {
+  const template = emailTemplates.queryNotification(query);
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@cyberatrixsolutions.com';
+  return await sendEmail(adminEmail, template.subject, template.html);
 };
 
 module.exports = {

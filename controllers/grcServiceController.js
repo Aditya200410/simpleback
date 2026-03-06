@@ -24,6 +24,7 @@ const getAllGRCServices = async (req, res) => {
     }
 
     const services = await GRCService.find(query)
+      .select('title slug category shortDescription icon priority isActive createdAt')
       .populate('createdBy', 'name email')
       .populate('updatedBy', 'name email')
       .sort({ priority: -1, createdAt: -1 });
@@ -104,20 +105,20 @@ const getGRCServiceBySlug = async (req, res) => {
 // Create new GRC service (Admin only)
 const createGRCService = async (req, res) => {
   try {
-    const { 
-      title, 
-      category, 
-      shortDescription, 
-      detailedDescription, 
-      icon, 
-      features, 
+    const {
+      title,
+      category,
+      shortDescription,
+      detailedDescription,
+      icon,
+      features,
       benefits,
       process,
       requirements,
       deliverables,
       pricing,
       paymentDetails,
-      duration, 
+      duration,
       industry,
       compliance,
       faqs,
@@ -170,7 +171,7 @@ const createGRCService = async (req, res) => {
 
     await service.save();
 
-    const populatedService = await GRCService.findById(service._id)   
+    const populatedService = await GRCService.findById(service._id)
       .populate('createdBy', 'name email')
       .populate('relatedServices', 'title slug icon shortDescription');
 
@@ -192,26 +193,26 @@ const createGRCService = async (req, res) => {
 // Update GRC service (Admin only)
 const updateGRCService = async (req, res) => {
   try {
-    const { 
-      title, 
-      category, 
-      shortDescription, 
-      detailedDescription, 
-      icon, 
-      features, 
+    const {
+      title,
+      category,
+      shortDescription,
+      detailedDescription,
+      icon,
+      features,
       benefits,
       process,
       requirements,
       deliverables,
       pricing,
       paymentDetails,
-      duration, 
+      duration,
       industry,
       compliance,
       faqs,
       caseStudies,
       relatedServices,
-      priority, 
+      priority,
       isActive
     } = req.body;
 
@@ -254,7 +255,7 @@ const updateGRCService = async (req, res) => {
 
     await service.save();
 
-    const populatedService = await GRCService.findById(service._id)   
+    const populatedService = await GRCService.findById(service._id)
       .populate('createdBy', 'name email')
       .populate('updatedBy', 'name email')
       .populate('relatedServices', 'title slug icon shortDescription');
@@ -344,7 +345,7 @@ const getGRCServiceCategories = async (req, res) => {
     const categories = await GRCCategory.find({ status: 'Active' })
       .select('name')
       .sort({ order: -1, name: 1 });
-    
+
     res.json({
       success: true,
       data: categories.map(cat => cat.name)

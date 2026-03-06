@@ -1,55 +1,49 @@
 const Query = require('../models/Query');
 const Course = require('../models/Course');
 const GRCService = require('../models/GRCService');
+const emailService = require('../services/emailService');
 
-// Create a new query (supports course or GRC service)
+// Create a new query (supports course, GRC service, or general inquiry)
 const createQuery = async (req, res) => {
   try {
-    const { 
-      fullName, 
-      email, 
-      phone, 
-      courseId, 
-      courseName, 
+    const {
+      fullName,
+      email,
+      phone,
+      courseId,
+      courseName,
       grcServiceId,
       grcServiceName,
-      subject, 
-      question, 
-      priority 
+      subject,
+      question,
+      priority
     } = req.body;
 
-    // Validate required fields: either course or GRC service must be provided
-    const hasCourse = !!(courseId && courseName);
-    const hasGRC = !!(grcServiceId && grcServiceName);
-
-    if (!fullName || !email || !subject || !question || (!hasCourse && !hasGRC)) {
+    // Validate required fields
+    if (!fullName || !email || !subject || !question) {
       return res.status(400).json({
         success: false,
         message: 'All required fields must be provided'
       });
     }
 
+    // Optional: Validate course or GRC if IDs are provided
+    const hasCourse = !!(courseId && courseName);
+    const hasGRC = !!(grcServiceId && grcServiceName);
+
     let resolvedCourse = null;
     let resolvedService = null;
 
-    if (hasCourse) {
+    if (courseId) {
       resolvedCourse = await Course.findById(courseId);
-      if (!resolvedCourse) {
-        return res.status(404).json({
-          success: false,
-          message: 'Course not found'
-        });
+      if (!resolvedCourse && courseName) {
+        // If courseId is invalid but we have a name, we can still proceed as general or log it
+        console.warn(`Query with invalid courseId ${courseId} but has courseName ${courseName}`);
       }
     }
 
-    if (hasGRC) {
+    if (grcServiceId) {
       resolvedService = await GRCService.findById(grcServiceId);
-      if (!resolvedService) {
-        return res.status(404).json({
-          success: false,
-          message: 'GRC service not found'
-        });
-      }
     }
 
     // Create new query
@@ -57,10 +51,10 @@ const createQuery = async (req, res) => {
       fullName,
       email,
       phone,
-      courseId: hasCourse ? courseId : undefined,
-      courseName: hasCourse ? (resolvedCourse.title || courseName) : undefined,
-      grcServiceId: hasGRC ? grcServiceId : undefined,
-      grcServiceName: hasGRC ? (resolvedService.title || grcServiceName) : undefined,
+      courseId: (hasCourse && resolvedCourse) ? courseId : undefined,
+      courseName: hasCourse ? (resolvedCourse?.title || courseName) : undefined,
+      grcServiceId: (hasGRC && resolvedService) ? grcServiceId : undefined,
+      grcServiceName: hasGRC ? (resolvedService?.title || grcServiceName) : undefined,
       subject,
       question,
       priority: priority || 'Medium'
@@ -68,9 +62,17 @@ const createQuery = async (req, res) => {
 
     await query.save();
 
+    // Send email notification to admin
+    try {
+      await emailService.sendQueryNotification(query);
+    } catch (emailError) {
+      console.error('Failed to send query notification email:', emailError);
+      // Don't fail the request if email fails
+    }
+
     // Populate related references for response
-    await query.populate('courseId', 'title category');
-    await query.populate('grcServiceId', 'title category');
+    if (query.courseId) await query.populate('courseId', 'title category');
+    if (query.grcServiceId) await query.populate('grcServiceId', 'title category');
 
     res.status(201).json({
       success: true,
@@ -94,7 +96,7 @@ const createQuery = async (req, res) => {
 
   } catch (error) {
     console.error('Create query error:', error);
-    
+
     if (error.name === 'ValidationError') {
       const validationErrors = Object.values(error.errors).map(err => err.message);
       return res.status(400).json({
@@ -141,7 +143,7 @@ const getAllQueries = async (req, res) => {
     // Get queries with pagination
     const queries = await Query.find(filter)
       .populate('courseId', 'title category price')
-        .populate('grcServiceId', 'title category')
+      .populate('grcServiceId', 'title category')
       .populate('respondedBy', 'email')
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -152,15 +154,19 @@ const getAllQueries = async (req, res) => {
 
     // Get statistics
     const stats = await Query.aggregate([
-      { $group: { 
-          _id: '$status', 
-          count: { $sum: 1 } 
-      }},
-      { $project: { 
-          status: '$_id', 
-          count: 1, 
-          _id: 0 
-      }}
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $project: {
+          status: '$_id',
+          count: 1,
+          _id: 0
+        }
+      }
     ]);
 
     const statusCounts = {
@@ -309,9 +315,9 @@ const getQueriesByCourse = async (req, res) => {
       status: 'Resolved',
       isPublic: true
     })
-    .select('subject question response createdAt')
-    .sort({ createdAt: -1 })
-    .limit(limit);
+      .select('subject question response createdAt')
+      .sort({ createdAt: -1 })
+      .limit(limit);
 
     res.json({
       success: true,

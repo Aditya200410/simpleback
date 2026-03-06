@@ -100,6 +100,7 @@ const Course = require('./models/Course');
 app.get('/api/courses/public', async (req, res) => {
   try {
     const courses = await Course.find()
+      .select('courseName slug category shortDescription pricing amount totalHours level status averageRating totalReviews instructorName createdBy')
       .populate('createdBy', 'email')
       .sort({ createdAt: -1 });
 
@@ -147,6 +148,7 @@ const Solution = require('./models/Solution');
 app.get('/api/solutions/public', async (req, res) => {
   try {
     const solutions = await Solution.find()
+      .select('title slug category shortDescription icon duration complexity status priority createdBy')
       .populate('createdBy', 'email')
       .sort({ createdAt: -1 });
 
