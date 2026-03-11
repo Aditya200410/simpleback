@@ -1,5 +1,15 @@
 const express = require('express');
-const { createCourse, getAllCourses, getCourseById, getCourseBySlug, updateCourse, deleteCourse, searchCourses, reorderCourses } = require('../controllers/courseController');
+const { 
+  createCourse, 
+  getAllCourses, 
+  getCourseById, 
+  getCourseBySlug, 
+  updateCourse, 
+  deleteCourse, 
+  searchCourses, 
+  reorderCourses,
+  toggleCourseShowOnHome 
+} = require('../controllers/courseController');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -47,6 +57,11 @@ router.get('/:id', getCourseById);
 // @desc    Update course
 // @access  Private
 router.put('/:id', updateCourse);
+
+// @route   PATCH /api/courses/:id/toggle-show-on-home
+// @desc    Toggle course home visibility
+// @access  Private
+router.patch('/:id/toggle-show-on-home', toggleCourseShowOnHome);
 
 // @route   DELETE /api/courses/:id
 // @desc    Delete course

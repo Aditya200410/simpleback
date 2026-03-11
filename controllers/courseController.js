@@ -142,7 +142,8 @@ const createCourse = async (req, res) => {
       certificationBody,
       certificationName,
       courseHighlights,
-      supportDetails
+      supportDetails,
+      showOnHome
     } = req.body;
 
     // Validate required fields
@@ -318,6 +319,7 @@ const createCourse = async (req, res) => {
       certificationBody: certificationBody || '',
       certificationName: certificationName || '',
       courseHighlights: processedCourseHighlights,
+      showOnHome: showOnHome || false,
       ...(processedSupportDetails ? { supportDetails: processedSupportDetails } : {}),
       createdBy: req.userId
     });
@@ -341,7 +343,13 @@ const createCourse = async (req, res) => {
 // Get all courses
 const getAllCourses = async (req, res) => {
   try {
-    const courses = await Course.find()
+    const { showOnHome } = req.query;
+    let query = {};
+    if (showOnHome !== undefined) {
+      query.showOnHome = showOnHome === 'true';
+    }
+
+    const courses = await Course.find(query)
       .populate('createdBy', 'email')
       .sort({ order: -1, createdAt: -1 });
 
@@ -440,7 +448,8 @@ const updateCourse = async (req, res) => {
       vendor,
       certificationBody,
       certificationName,
-      courseHighlights
+      courseHighlights,
+      showOnHome
     } = req.body;
 
     const course = await Course.findById(req.params.id);
@@ -587,6 +596,10 @@ const updateCourse = async (req, res) => {
       };
     }
 
+    if (showOnHome !== undefined) {
+      course.showOnHome = showOnHome;
+    }
+
     await course.save();
 
     res.json({
@@ -721,6 +734,35 @@ const reorderCourses = async (req, res) => {
   }
 };
 
+const toggleCourseShowOnHome = async (req, res) => {
+  try {
+    const course = await Course.findById(req.params.id);
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: 'Course not found'
+      });
+    }
+
+    course.showOnHome = !course.showOnHome;
+    await course.save();
+
+    res.json({
+      success: true,
+      data: course,
+      message: `Course ${course.showOnHome ? 'set to show' : 'hidden from'} home page`
+    });
+  } catch (error) {
+    console.error('Error toggling course home visibility:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error toggling home visibility',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createCourse,
   getAllCourses,
@@ -729,5 +771,6 @@ module.exports = {
   updateCourse,
   deleteCourse,
   searchCourses,
-  reorderCourses
+  reorderCourses,
+  toggleCourseShowOnHome
 };

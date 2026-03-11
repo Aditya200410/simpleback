@@ -9,6 +9,7 @@ const {
   updateGRCService,
   deleteGRCService,
   toggleGRCServiceStatus,
+  toggleGRCServiceShowOnHome,
   getGRCServiceCategories,
   reorderGRCServices
 } = require('../controllers/grcServiceController');
@@ -24,6 +25,7 @@ router.post('/', auth, createGRCService);
 router.put('/:id', auth, updateGRCService);
 router.delete('/:id', auth, deleteGRCService);
 router.patch('/:id/toggle-status', auth, toggleGRCServiceStatus);
+router.patch('/:id/toggle-show-on-home', auth, toggleGRCServiceShowOnHome);
 router.post('/reorder', auth, reorderGRCServices);
 
 module.exports = router;

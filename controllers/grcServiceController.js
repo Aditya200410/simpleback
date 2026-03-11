@@ -3,7 +3,7 @@ const GRCService = require('../models/GRCService');
 // Get all GRC services
 const getAllGRCServices = async (req, res) => {
   try {
-    const { category, isActive, search } = req.query;
+    const { category, isActive, search, showOnHome } = req.query;
     let query = {};
 
     // Build query based on filters
@@ -18,13 +18,17 @@ const getAllGRCServices = async (req, res) => {
     }
     // If isActive === 'all', don't add any filter (show both active and inactive)
 
+    if (showOnHome !== undefined) {
+      query.showOnHome = showOnHome === 'true';
+    }
+
     // Text search
     if (search) {
       query.$text = { $search: search };
     }
 
     const services = await GRCService.find(query)
-      .select('title slug category shortDescription icon priority isActive createdAt')
+      .select('title slug category shortDescription icon priority isActive showOnHome createdAt')
       .populate('createdBy', 'name email')
       .populate('updatedBy', 'name email')
       .sort({ priority: -1, createdAt: -1 });
@@ -124,7 +128,8 @@ const createGRCService = async (req, res) => {
       faqs,
       caseStudies,
       relatedServices,
-      priority
+      priority,
+      showOnHome
     } = req.body;
 
     // Generate slug from title
@@ -166,6 +171,7 @@ const createGRCService = async (req, res) => {
       caseStudies: caseStudies || [],
       relatedServices: relatedServices || [],
       priority: priority || 0,
+      showOnHome: showOnHome || false,
       createdBy: req.user.id
     });
 
@@ -213,7 +219,8 @@ const updateGRCService = async (req, res) => {
       caseStudies,
       relatedServices,
       priority,
-      isActive
+      isActive,
+      showOnHome
     } = req.body;
 
     const service = await GRCService.findById(req.params.id);
@@ -250,6 +257,7 @@ const updateGRCService = async (req, res) => {
     if (relatedServices && Array.isArray(relatedServices)) service.relatedServices = relatedServices;
     if (priority !== undefined) service.priority = priority;
     if (isActive !== undefined) service.isActive = isActive;
+    if (showOnHome !== undefined) service.showOnHome = showOnHome;
 
     service.updatedBy = req.user.id;
 
@@ -393,6 +401,40 @@ const reorderGRCServices = async (req, res) => {
   }
 };
 
+const toggleGRCServiceShowOnHome = async (req, res) => {
+  try {
+    const service = await GRCService.findById(req.params.id);
+
+    if (!service) {
+      return res.status(404).json({
+        success: false,
+        message: 'GRC service not found'
+      });
+    }
+
+    service.showOnHome = !service.showOnHome;
+    service.updatedBy = req.user.id;
+    await service.save();
+
+    const populatedService = await GRCService.findById(service._id)
+      .populate('createdBy', 'name email')
+      .populate('updatedBy', 'name email');
+
+    res.json({
+      success: true,
+      data: populatedService,
+      message: `GRC service ${service.showOnHome ? 'set to show' : 'hidden from'} home page`
+    });
+  } catch (error) {
+    console.error('Error toggling GRC service home visibility:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error toggling home visibility',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   getAllGRCServices,
   getGRCServiceById,
@@ -401,6 +443,7 @@ module.exports = {
   updateGRCService,
   deleteGRCService,
   toggleGRCServiceStatus,
+  toggleGRCServiceShowOnHome,
   getGRCServiceCategories,
   reorderGRCServices
 };

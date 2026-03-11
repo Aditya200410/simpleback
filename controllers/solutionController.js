@@ -25,7 +25,8 @@ const createSolution = async (req, res) => {
       caseStudies,
       relatedServices,
       isActive,
-      priority
+      priority,
+      showOnHome
     } = req.body;
 
     // Validate required fields
@@ -145,6 +146,7 @@ const createSolution = async (req, res) => {
       relatedServices: processedRelatedServices,
       isActive: isActive !== undefined ? isActive : true,
       priority: priority || 0,
+      showOnHome: showOnHome || false,
       createdBy: req.userId
     });
 
@@ -167,7 +169,13 @@ const createSolution = async (req, res) => {
 // Get all solutions
 const getAllSolutions = async (req, res) => {
   try {
-    const solutions = await Solution.find()
+    const { showOnHome } = req.query;
+    let query = {};
+    if (showOnHome !== undefined) {
+      query.showOnHome = showOnHome === 'true';
+    }
+
+    const solutions = await Solution.find(query)
       .populate('createdBy', 'email')
       .sort({ priority: -1, createdAt: -1 });
 
@@ -264,6 +272,7 @@ const updateSolution = async (req, res) => {
       relatedServices,
       isActive,
       priority,
+      showOnHome,
       // Legacy/backward-compat fields
       solutionName,
       description,
@@ -319,6 +328,7 @@ const updateSolution = async (req, res) => {
     if (duration) solution.duration = duration;
     if (isActive !== undefined) solution.isActive = isActive;
     if (priority !== undefined) solution.priority = priority;
+    if (showOnHome !== undefined) solution.showOnHome = showOnHome;
 
     // Back-compat simple fields that are not in schema will be ignored by mongoose if not defined
     if (status !== undefined) solution.status = status;
@@ -496,6 +506,38 @@ const reorderSolutions = async (req, res) => {
   }
 };
 
+const toggleSolutionShowOnHome = async (req, res) => {
+  try {
+    const solution = await Solution.findById(req.params.id);
+
+    if (!solution) {
+      return res.status(404).json({
+        success: false,
+        message: 'Solution not found'
+      });
+    }
+
+    solution.showOnHome = !solution.showOnHome;
+    if (req.userId) {
+      solution.updatedBy = req.userId;
+    }
+    await solution.save();
+
+    res.json({
+      success: true,
+      solution,
+      message: `Solution ${solution.showOnHome ? 'set to show' : 'hidden from'} home page`
+    });
+  } catch (error) {
+    console.error('Error toggling solution home visibility:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error toggling home visibility',
+      error: error.message
+    });
+  }
+};
+
 module.exports = {
   createSolution,
   getAllSolutions,
@@ -503,5 +545,6 @@ module.exports = {
   getSolutionBySlug,
   updateSolution,
   deleteSolution,
-  reorderSolutions
+  reorderSolutions,
+  toggleSolutionShowOnHome
 };

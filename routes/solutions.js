@@ -1,5 +1,14 @@
 const express = require('express');
-const { createSolution, getAllSolutions, getSolutionById, getSolutionBySlug, updateSolution, deleteSolution, reorderSolutions } = require('../controllers/solutionController');
+const { 
+  createSolution, 
+  getAllSolutions, 
+  getSolutionById, 
+  getSolutionBySlug, 
+  updateSolution, 
+  deleteSolution, 
+  reorderSolutions,
+  toggleSolutionShowOnHome 
+} = require('../controllers/solutionController');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
@@ -42,6 +51,11 @@ router.get('/:id', getSolutionById);
 // @desc    Update solution
 // @access  Private
 router.put('/:id', updateSolution);
+
+// @route   PATCH /api/solutions/:id/toggle-show-on-home
+// @desc    Toggle solution home visibility
+// @access  Private
+router.patch('/:id/toggle-show-on-home', toggleSolutionShowOnHome);
 
 // @route   DELETE /api/solutions/:id
 // @desc    Delete solution

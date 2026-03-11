@@ -120,6 +120,10 @@ const solutionSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  showOnHome: {
+    type: Boolean,
+    default: false
+  },
   complexity: {
     type: String,
     enum: ['Basic', 'Intermediate', 'Advanced', 'Enterprise'],
