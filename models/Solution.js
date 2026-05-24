@@ -154,7 +154,7 @@ const solutionSchema = new mongoose.Schema({
 
 // Index for better performance
 solutionSchema.index({ category: 1, isActive: 1 });
-solutionSchema.index({ slug: 1 });
+
 solutionSchema.index({ industry: 1, isActive: 1 });
 solutionSchema.index({ title: 'text', shortDescription: 'text', detailedDescription: 'text' });
 

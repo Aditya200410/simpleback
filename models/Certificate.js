@@ -31,7 +31,7 @@ const certificateSchema = new mongoose.Schema({
     trim: true,
     validate: {
       validator: function(v) {
-        return /^[\+]?[1-9][\d]{0,15}$/.test(v);
+        return /^[\+]?\d[\d\-\s\(\)]{8,20}$/.test(v);
       },
       message: 'Please provide a valid phone number'
     }

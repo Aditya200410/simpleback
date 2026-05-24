@@ -132,7 +132,7 @@ const grcServiceSchema = new mongoose.Schema({
 
 // Index for better performance
 grcServiceSchema.index({ category: 1, isActive: 1 });
-grcServiceSchema.index({ slug: 1 });
+
 grcServiceSchema.index({ industry: 1, isActive: 1 });
 grcServiceSchema.index({ title: 'text', shortDescription: 'text', detailedDescription: 'text' });
 

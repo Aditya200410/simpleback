@@ -20,7 +20,7 @@ const enrollmentSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Phone number is required'],
     trim: true,
-    match: [/^[\+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number']
+    match: [/^[\+]?\d{8,15}$/, 'Please enter a valid phone number']
   },
 
   // Course Information
@@ -214,7 +214,7 @@ enrollmentSchema.index({ courseId: 1 });
 enrollmentSchema.index({ status: 1 });
 enrollmentSchema.index({ paymentStatus: 1 });
 enrollmentSchema.index({ enrollmentDate: -1 });
-enrollmentSchema.index({ email: 1, courseId: 1 }, { unique: true }); // Prevent duplicate enrollments
+// enrollmentSchema.index({ email: 1, courseId: 1 }, { unique: true }); // Prevent duplicate enrollments
 
 // Virtual for enrollment ID display
 enrollmentSchema.virtual('enrollmentId').get(function() {

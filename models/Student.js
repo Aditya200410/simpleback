@@ -19,7 +19,7 @@ const studentSchema = new mongoose.Schema({
   phone: {
     type: String,
     trim: true,
-    match: [/^[\+]?[1-9][\d\-\s\(\)]{8,20}$/, 'Please enter a valid phone number']
+    match: [/^[\+]?\d[\d\-\s\(\)]{8,20}$/, 'Please enter a valid phone number']
   },
   enrolledCourses: [{
     course: {
@@ -70,7 +70,7 @@ const studentSchema = new mongoose.Schema({
 });
 
 // Index for better query performance
-studentSchema.index({ email: 1 });
+
 studentSchema.index({ status: 1 });
 studentSchema.index({ 'enrolledCourses.course': 1 });
 
