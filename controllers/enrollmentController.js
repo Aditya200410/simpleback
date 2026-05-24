@@ -30,7 +30,13 @@ const createEnrollment = async (req, res) => {
       batchStartDate,
       batchEndDate,
       batchStatus,
-      enrollmentType
+      enrollmentType,
+      company,
+      timeline,
+      budget,
+      requirements,
+      motivation,
+      learningGoals
     } = req.body;
 
     // Determine service type
@@ -56,22 +62,17 @@ const createEnrollment = async (req, res) => {
     // Skip service validation to avoid course validation errors
     // We'll just use the provided service names and amounts
 
-    // Check if user is already enrolled in this service
+    // Check if user is already enrolled in this course (allow multiple requests for GRC/Solutions)
     let existingEnrollment = null;
     if (hasCourse) {
       existingEnrollment = await Enrollment.findOne({ email, courseId });
-    } else if (hasGRCService) {
-      existingEnrollment = await Enrollment.findOne({ email, grcServiceId });
-    } else if (hasSolution) {
-      existingEnrollment = await Enrollment.findOne({ email, solutionId });
-    }
 
-    if (existingEnrollment) {
-      const serviceType = hasCourse ? 'course' : hasGRCService ? 'GRC service' : 'solution';
-      return res.status(400).json({
-        success: false,
-        message: `You have already requested this ${serviceType}`
-      });
+      if (existingEnrollment) {
+        return res.status(400).json({
+          success: false,
+          message: 'You have already enrolled in this course'
+        });
+      }
     }
 
     // Skip batch validation to avoid course validation errors
@@ -108,7 +109,7 @@ const createEnrollment = async (req, res) => {
       fullName,
       email,
       phone,
-      experience: experience || 'Beginner',
+
       preferredStartDate: preferredStartDate ? new Date(preferredStartDate) : undefined,
       howDidYouHear,
       batchId,
@@ -120,7 +121,13 @@ const createEnrollment = async (req, res) => {
       ipAddress,
       userAgent,
       status,
-      paymentStatus
+      paymentStatus,
+      company,
+      timeline,
+      budget,
+      requirements,
+      motivation,
+      learningGoals
     };
 
     // Add service-specific data
@@ -187,7 +194,7 @@ const createEnrollment = async (req, res) => {
     });
   } catch (error) {
     console.error('Create enrollment error:', error);
-    
+
     // Handle duplicate key error
     if (error.code === 11000) {
       return res.status(400).json({
@@ -195,7 +202,7 @@ const createEnrollment = async (req, res) => {
         message: 'You are already enrolled in this course'
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to create enrollment'
@@ -206,18 +213,18 @@ const createEnrollment = async (req, res) => {
 // Get all enrollments (admin only)
 const getAllEnrollments = async (req, res) => {
   try {
-    const { 
-      status, 
-      paymentStatus, 
-      courseId, 
-      email, 
+    const {
+      status,
+      paymentStatus,
+      courseId,
+      email,
       enrollmentType,
-      page = 1, 
+      page = 1,
       limit = 10,
       sortBy = 'enrollmentDate',
       sortOrder = 'desc'
     } = req.query;
-    
+
     // Build filter object
     const filter = {};
     if (status) filter.status = status;
@@ -658,7 +665,7 @@ const deleteEnrollment = async (req, res) => {
 const createGRCServiceEnrollment = async (req, res) => {
   try {
     console.log('GRC Service Enrollment Request Body:', req.body);
-    
+
     const {
       fullName,
       email,
@@ -779,7 +786,7 @@ const createGRCServiceEnrollment = async (req, res) => {
     });
   } catch (error) {
     console.error('Create GRC service enrollment error:', error);
-    
+
     // Handle specific error types
     if (error.name === 'ValidationError') {
       return res.status(400).json({
@@ -787,14 +794,14 @@ const createGRCServiceEnrollment = async (req, res) => {
         message: 'Validation error: ' + error.message
       });
     }
-    
+
     if (error.name === 'CastError') {
       return res.status(400).json({
         success: false,
         message: 'Invalid data format'
       });
     }
-    
+
     res.status(500).json({
       success: false,
       message: error.message || 'Failed to create GRC service enrollment'
