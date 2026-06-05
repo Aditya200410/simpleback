@@ -33,10 +33,10 @@ const createSolution = async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!title || !category || !shortDescription || !detailedDescription || !duration || !complexity || !targetAudience) {
+    if (!title) {
       return res.status(400).json({
         success: false,
-        message: 'Required fields: title, category, shortDescription, detailedDescription, duration, complexity, targetAudience'
+        message: 'Title is required'
       });
     }
 

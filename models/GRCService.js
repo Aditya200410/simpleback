@@ -29,27 +29,22 @@ const grcServiceSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: true,
     trim: true
   },
   shortDescription: {
     type: String,
-    required: true,
     trim: true
   },
   detailedDescription: {
     type: String,
-    required: true,
     trim: true
   },
   icon: {
     type: String,
-    required: true,
     default: '🛡️'
   },
   features: [{
-    type: String,
-    required: true
+    type: String
   }],
   benefits: [{
     title: String,
@@ -62,12 +57,10 @@ const grcServiceSchema = new mongoose.Schema({
     duration: String
   }],
   requirements: [{
-    type: String,
-    required: true
+    type: String
   }],
   deliverables: [{
-    type: String,
-    required: true
+    type: String
   }],
   pricing: {
     startingFrom: Number,
@@ -94,7 +87,6 @@ const grcServiceSchema = new mongoose.Schema({
   },
   duration: {
     type: String,
-    required: true,
     trim: true
   },
   industry: [{

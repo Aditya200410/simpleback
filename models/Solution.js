@@ -30,32 +30,26 @@ const solutionSchema = new mongoose.Schema({
   },
   category: {
     type: String,
-    required: [true, 'Category is required'],
     trim: true
   },
   shortDescription: {
     type: String,
-    required: true,
     trim: true
   },
   detailedDescription: {
     type: String,
-    required: true,
     trim: true
   },
   icon: {
     type: String,
-    required: true,
     default: '🛡️'
   },
   duration: {
     type: String,
-    required: true,
     trim: true
   },
   features: [{
-    type: String,
-    required: true
+    type: String
   }],
   benefits: [{
     title: String,
@@ -68,12 +62,10 @@ const solutionSchema = new mongoose.Schema({
     duration: String
   }],
   requirements: [{
-    type: String,
-    required: true
+    type: String
   }],
   deliverables: [{
-    type: String,
-    required: true
+    type: String
   }],
   pricing: {
     startingFrom: Number,
@@ -140,8 +132,7 @@ const solutionSchema = new mongoose.Schema({
   },
   complexity: {
     type: String,
-    enum: ['Basic', 'Intermediate', 'Advanced', 'Enterprise'],
-    required: true
+    enum: ['Basic', 'Intermediate', 'Advanced', 'Enterprise']
   },
   status: {
     type: String,
@@ -150,7 +141,6 @@ const solutionSchema = new mongoose.Schema({
   },
   targetAudience: {
     type: String,
-    required: true,
     trim: true,
     maxlength: [500, 'Target audience description cannot exceed 500 characters']
   },

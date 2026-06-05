@@ -139,17 +139,10 @@ const createGRCService = async (req, res) => {
     const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
     // Validation
-    if (!title || !category || !shortDescription || !detailedDescription || !features || !duration) {
+    if (!title) {
       return res.status(400).json({
         success: false,
-        message: 'All required fields must be provided'
-      });
-    }
-
-    if (!Array.isArray(features) || features.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Features must be a non-empty array'
+        message: 'Title is required'
       });
     }
 
