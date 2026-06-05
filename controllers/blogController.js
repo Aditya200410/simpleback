@@ -6,6 +6,9 @@ const createBlog = async (req, res) => {
   try {
     const {
       title,
+      slug: reqSlug,
+      metaTitle,
+      metaDescription,
       content,
       excerpt,
       featuredImage,
@@ -30,7 +33,7 @@ const createBlog = async (req, res) => {
     }
 
     // Generate unique slug
-    let baseSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    let baseSlug = (reqSlug && reqSlug.trim() !== '') ? reqSlug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') : title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     let slug = baseSlug;
     let counter = 1;
 
@@ -43,6 +46,8 @@ const createBlog = async (req, res) => {
     const blog = new Blog({
       title,
       slug,
+      metaTitle,
+      metaDescription,
       content,
       excerpt,
       featuredImage,
@@ -293,8 +298,18 @@ const updateBlog = async (req, res) => {
       });
     }
 
-    // Handle slug update if title changed
-    if (updateData.title && updateData.title !== blog.title) {
+    // Handle slug update if custom slug provided or title changed
+    if (updateData.slug && updateData.slug.trim() !== '' && updateData.slug !== blog.slug) {
+      let baseSlug = updateData.slug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      let slug = baseSlug;
+      let counter = 1;
+
+      while (await Blog.findOne({ slug, _id: { $ne: id } })) {
+        slug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+      updateData.slug = slug;
+    } else if (!updateData.slug && updateData.title && updateData.title !== blog.title) {
       let baseSlug = updateData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
       let slug = baseSlug;
       let counter = 1;
@@ -304,6 +319,12 @@ const updateBlog = async (req, res) => {
         counter++;
       }
       updateData.slug = slug;
+    } else {
+      // If slug is explicitly empty but we aren't changing title, we might just leave the old slug or remove it. 
+      // Typically we don't want to clear a slug, so delete from updateData if it's empty
+      if (updateData.slug === '') {
+        delete updateData.slug;
+      }
     }
 
     // If status is being changed to published and publishedAt is not set, set it now

@@ -114,6 +114,9 @@ const createGRCService = async (req, res) => {
       category,
       shortDescription,
       detailedDescription,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
       icon,
       features,
       benefits,
@@ -156,6 +159,9 @@ const createGRCService = async (req, res) => {
       category,
       shortDescription,
       detailedDescription,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
       icon: icon || '🛡️',
       features,
       benefits: benefits || [],
@@ -204,6 +210,9 @@ const updateGRCService = async (req, res) => {
       category,
       shortDescription,
       detailedDescription,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
       icon,
       features,
       benefits,
@@ -241,6 +250,9 @@ const updateGRCService = async (req, res) => {
     if (category) service.category = category;
     if (shortDescription) service.shortDescription = shortDescription;
     if (detailedDescription) service.detailedDescription = detailedDescription;
+    if (metaTitle !== undefined) service.metaTitle = metaTitle;
+    if (metaDescription !== undefined) service.metaDescription = metaDescription;
+    if (metaKeywords !== undefined) service.metaKeywords = metaKeywords;
     if (icon) service.icon = icon;
     if (features && Array.isArray(features)) service.features = features;
     if (benefits && Array.isArray(benefits)) service.benefits = benefits;

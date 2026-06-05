@@ -18,6 +18,16 @@ const blogSchema = new mongoose.Schema({
     trim: true,
     lowercase: true
   },
+  metaTitle: {
+    type: String,
+    trim: true,
+    maxlength: 100
+  },
+  metaDescription: {
+    type: String,
+    trim: true,
+    maxlength: 200
+  },
   content: {
     type: String,
     required: true

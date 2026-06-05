@@ -8,6 +8,9 @@ const createSolution = async (req, res) => {
       category, 
       shortDescription,
       detailedDescription,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
       icon,
       duration,
       complexity,
@@ -128,6 +131,9 @@ const createSolution = async (req, res) => {
       category,
       shortDescription,
       detailedDescription,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
       icon: icon || '🛡️',
       duration,
       complexity,
@@ -255,6 +261,9 @@ const updateSolution = async (req, res) => {
       category,
       shortDescription,
       detailedDescription,
+      metaTitle,
+      metaDescription,
+      metaKeywords,
       icon,
       duration,
       features,
@@ -324,6 +333,9 @@ const updateSolution = async (req, res) => {
     if (category) solution.category = category;
     if (shortDescription !== undefined) solution.shortDescription = shortDescription;
     if (detailedDescription !== undefined) solution.detailedDescription = detailedDescription || description || solution.detailedDescription;
+    if (metaTitle !== undefined) solution.metaTitle = metaTitle;
+    if (metaDescription !== undefined) solution.metaDescription = metaDescription;
+    if (metaKeywords !== undefined) solution.metaKeywords = metaKeywords;
     if (icon) solution.icon = icon;
     if (duration) solution.duration = duration;
     if (isActive !== undefined) solution.isActive = isActive;
