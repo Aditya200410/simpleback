@@ -20,6 +20,11 @@ const querySchema = new mongoose.Schema({
     trim: true,
     maxlength: [20, 'Phone number cannot exceed 20 characters']
   },
+  companyName: {
+    type: String,
+    trim: true,
+    maxlength: [100, 'Company name cannot exceed 100 characters']
+  },
   // Either course or GRC service will be provided
   courseId: {
     type: mongoose.Schema.Types.ObjectId,
