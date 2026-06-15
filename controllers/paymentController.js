@@ -25,7 +25,7 @@ const EMAIL_CONFIG = {
 // Create email transporter
 let emailTransporter = null;
 if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
-  emailTransporter = nodemailer.createTransporter(EMAIL_CONFIG);
+  emailTransporter = nodemailer.createTransport(EMAIL_CONFIG);
 }
 
 // Generate PhonePe checksum

@@ -446,7 +446,7 @@ const sendRejectionEmail = async (enrollment) => {
 // Send query notification email
 const sendQueryNotification = async (query) => {
   const template = emailTemplates.queryNotification(query);
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@cyberatrixsolutions.com';
+  const adminEmail = process.env.ADMIN_EMAIL || 'cyberatrix1@gmail.com';
   return await sendEmail(adminEmail, template.subject, template.html);
 };
 
@@ -455,5 +455,6 @@ module.exports = {
   sendEnrollmentConfirmation,
   sendAdminNotification,
   sendAdminReply,
-  sendRejectionEmail
+  sendRejectionEmail,
+  sendQueryNotification
 };
