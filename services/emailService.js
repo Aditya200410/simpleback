@@ -2,7 +2,7 @@ const nodemailer = require('nodemailer');
 
 // Create transporter
 const createTransporter = () => {
-  return nodemailer.createTransporter({
+  return nodemailer.createTransport({
     service: 'gmail', // You can change this to other services
     auth: {
       user: process.env.EMAIL_USER,
@@ -343,16 +343,20 @@ const emailTemplates = {
 };
 
 // Send email function
-const sendEmail = async (to, subject, html) => {
+const sendEmail = async (to, subject, html, replyTo = null, fromName = null) => {
   try {
     const transporter = createTransporter();
 
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: fromName ? `"${fromName}" <${process.env.EMAIL_USER}>` : process.env.EMAIL_USER,
       to: to,
       subject: subject,
       html: html
     };
+
+    if (replyTo) {
+      mailOptions.replyTo = replyTo;
+    }
 
     const result = await transporter.sendMail(mailOptions);
     console.log('Email sent successfully:', result.messageId);
@@ -372,8 +376,8 @@ const sendEnrollmentConfirmation = async (enrollment) => {
 // Send admin notification email
 const sendAdminNotification = async (enrollment) => {
   const template = emailTemplates.adminNotification(enrollment);
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@cyberatrixsolutions.com';
-  return await sendEmail(adminEmail, template.subject, template.html);
+  const adminEmail = process.env.ADMIN_EMAIL || 'cyberatrix1@gmail.com';
+  return await sendEmail(adminEmail, template.subject, template.html, enrollment.email, enrollment.fullName);
 };
 
 // Send admin reply email
@@ -447,7 +451,7 @@ const sendRejectionEmail = async (enrollment) => {
 const sendQueryNotification = async (query) => {
   const template = emailTemplates.queryNotification(query);
   const adminEmail = process.env.ADMIN_EMAIL || 'cyberatrix1@gmail.com';
-  return await sendEmail(adminEmail, template.subject, template.html);
+  return await sendEmail(adminEmail, template.subject, template.html, query.email, query.fullName);
 };
 
 module.exports = {
