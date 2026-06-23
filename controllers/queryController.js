@@ -72,6 +72,14 @@ const createQuery = async (req, res) => {
       // Don't fail the request if email fails
     }
 
+    // Send auto-reply to the user
+    try {
+      await emailService.sendQueryAutoReply(query);
+    } catch (emailError) {
+      console.error('Failed to send query auto-reply email:', emailError);
+      // Don't fail the request if email fails
+    }
+
     // Populate related references for response
     if (query.courseId) await query.populate('courseId', 'title category');
     if (query.grcServiceId) await query.populate('grcServiceId', 'title category');

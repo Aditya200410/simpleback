@@ -14,8 +14,12 @@ const createTransporter = () => {
 // Email templates
 const emailTemplates = {
   enrollmentConfirmation: (enrollment) => {
+    const serviceName = enrollment.courseName || enrollment.grcServiceName || enrollment.solutionName || 'Service';
+    const serviceAmount = enrollment.courseAmount || enrollment.grcServiceAmount || enrollment.solutionAmount || 0;
+    const typeLabel = enrollment.courseName ? 'Course' : 'Service';
+
     return {
-      subject: `Enrollment Confirmation - ${enrollment.courseName}`,
+      subject: `Enrollment Confirmation - ${serviceName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
@@ -26,7 +30,7 @@ const emailTemplates = {
           <div style="padding: 30px; background: #f8f9fa;">
             <h2 style="color: #333; margin-top: 0;">Hello ${enrollment.fullName}!</h2>
             
-            <p>Thank you for enrolling in our course. Here are your enrollment details:</p>
+            <p>Thank you for your enrollment. Here are your details:</p>
             
             <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
               <h3 style="color: #667eea; margin-top: 0;">Enrollment Details</h3>
@@ -36,8 +40,8 @@ const emailTemplates = {
                   <td style="padding: 8px 0; color: #333;">${enrollment.enrollmentId}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Course Name:</td>
-                  <td style="padding: 8px 0; color: #333;">${enrollment.courseName}</td>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">${typeLabel} Name:</td>
+                  <td style="padding: 8px 0; color: #333;">${serviceName}</td>
                 </tr>
                 ${enrollment.batchName ? `
                 <tr>
@@ -67,7 +71,7 @@ const emailTemplates = {
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; font-weight: bold; color: #555;">Amount:</td>
-                  <td style="padding: 8px 0; color: #333;">₹${enrollment.courseAmount}</td>
+                  <td style="padding: 8px 0; color: #333;">₹${serviceAmount}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; font-weight: bold; color: #555;">Enrollment Date:</td>
@@ -339,6 +343,33 @@ const emailTemplates = {
         </div>
       `
     };
+  },
+
+  queryAutoReply: (query) => {
+    return {
+      subject: `We received your inquiry: ${query.subject}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+          <div style="background: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%); color: white; padding: 30px; text-align: center;">
+            <h1 style="margin: 0; font-size: 28px;">Thank you for contacting us</h1>
+            <p style="margin: 10px 0 0 0; font-size: 16px;">CyberAtrix</p>
+          </div>
+          <div style="padding: 30px; background: #f8f9fa;">
+            <h2 style="color: #333; margin-top: 0;">Hello ${query.fullName},</h2>
+            <p style="color: #555; line-height: 1.6;">We have successfully received your inquiry regarding <strong>"${query.subject}"</strong>. Our team is currently reviewing your request and will get back to you within 24-48 hours.</p>
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h3 style="color: #3b82f6; margin-top: 0;">Your Inquiry Summary</h3>
+              <p style="margin: 0; color: #1e293b; line-height: 1.6; white-space: pre-wrap;">${query.question}</p>
+            </div>
+            <p style="color: #555; line-height: 1.6;">If you have any urgent matters, please reply directly to this email.</p>
+            <p style="color: #555; line-height: 1.6;">Best regards,<br>The Cyberatrix Team</p>
+          </div>
+          <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 14px;">
+            <p style="margin: 0;">© ${new Date().getFullYear()} Cyberatrix Solutions. All rights reserved.</p>
+          </div>
+        </div>
+      `
+    };
   }
 };
 
@@ -454,11 +485,18 @@ const sendQueryNotification = async (query) => {
   return await sendEmail(adminEmail, template.subject, template.html, query.email, query.fullName);
 };
 
+// Send query auto-reply email to user
+const sendQueryAutoReply = async (query) => {
+  const template = emailTemplates.queryAutoReply(query);
+  return await sendEmail(query.email, template.subject, template.html);
+};
+
 module.exports = {
   sendEmail,
   sendEnrollmentConfirmation,
   sendAdminNotification,
   sendAdminReply,
   sendRejectionEmail,
-  sendQueryNotification
+  sendQueryNotification,
+  sendQueryAutoReply
 };
