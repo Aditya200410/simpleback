@@ -119,22 +119,29 @@ const emailTemplates = {
   },
 
   adminNotification: (enrollment) => {
+    const serviceName = enrollment.courseName || enrollment.grcServiceName || enrollment.solutionName || 'Service';
+    const serviceAmount = enrollment.courseAmount || enrollment.grcServiceAmount || enrollment.solutionAmount || 0;
+    const isCourse = !!enrollment.courseName;
+    const typeLabel = isCourse ? 'Course' : (enrollment.grcServiceName ? 'GRC Service' : 'Solution');
+    const headerTitle = `New ${typeLabel} Request`;
+    const subTitle = `A new request has been submitted for one of your ${typeLabel.toLowerCase()}s. Here are the details:`;
+
     return {
-      subject: `New Enrollment - ${enrollment.courseName}`,
+      subject: `New Request - ${serviceName}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center;">
-            <h1 style="margin: 0; font-size: 28px;">New Enrollment Alert</h1>
+            <h1 style="margin: 0; font-size: 28px;">New Request Alert</h1>
             <p style="margin: 10px 0 0 0; font-size: 16px;">Admin Notification</p>
           </div>
           
           <div style="padding: 30px; background: #f8f9fa;">
-            <h2 style="color: #333; margin-top: 0;">New Student Enrollment</h2>
+            <h2 style="color: #333; margin-top: 0;">${headerTitle}</h2>
             
-            <p>A new student has enrolled in one of your courses. Here are the details:</p>
+            <p>${subTitle}</p>
             
             <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <h3 style="color: #667eea; margin-top: 0;">Student Information</h3>
+              <h3 style="color: #667eea; margin-top: 0;">Client Information</h3>
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                   <td style="padding: 8px 0; font-weight: bold; color: #555;">Name:</td>
@@ -148,23 +155,37 @@ const emailTemplates = {
                   <td style="padding: 8px 0; font-weight: bold; color: #555;">Phone:</td>
                   <td style="padding: 8px 0; color: #333;">${enrollment.phone}</td>
                 </tr>
+                ${enrollment.company ? `
+                <tr>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Company:</td>
+                  <td style="padding: 8px 0; color: #333;">${enrollment.company}</td>
+                </tr>
+                ` : ''}
+                ${enrollment.experience ? `
                 <tr>
                   <td style="padding: 8px 0; font-weight: bold; color: #555;">Experience:</td>
                   <td style="padding: 8px 0; color: #333;">${enrollment.experience}</td>
                 </tr>
+                ` : ''}
+                ${enrollment.howDidYouHear ? `
+                <tr>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Source:</td>
+                  <td style="padding: 8px 0; color: #333;">${enrollment.howDidYouHear}</td>
+                </tr>
+                ` : ''}
               </table>
             </div>
             
             <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <h3 style="color: #667eea; margin-top: 0;">Course Information</h3>
+              <h3 style="color: #667eea; margin-top: 0;">${typeLabel} Information</h3>
               <table style="width: 100%; border-collapse: collapse;">
                 <tr>
-                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Enrollment ID:</td>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Request ID:</td>
                   <td style="padding: 8px 0; color: #333;">${enrollment.enrollmentId}</td>
                 </tr>
                 <tr>
-                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Course:</td>
-                  <td style="padding: 8px 0; color: #333;">${enrollment.courseName}</td>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">${typeLabel}:</td>
+                  <td style="padding: 8px 0; color: #333;">${serviceName}</td>
                 </tr>
                 ${enrollment.batchName ? `
                 <tr>
@@ -172,9 +193,19 @@ const emailTemplates = {
                   <td style="padding: 8px 0; color: #333;">${enrollment.batchName}</td>
                 </tr>
                 ` : ''}
+                ${enrollment.preferredStartDate ? `
+                <tr>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Preferred Start Date:</td>
+                  <td style="padding: 8px 0; color: #333;">${new Date(enrollment.preferredStartDate).toLocaleDateString('en-IN')}</td>
+                </tr>
+                ` : ''}
                 <tr>
                   <td style="padding: 8px 0; font-weight: bold; color: #555;">Amount:</td>
-                  <td style="padding: 8px 0; color: #333;">₹${enrollment.courseAmount}</td>
+                  <td style="padding: 8px 0; color: #333;">₹${serviceAmount}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 0; font-weight: bold; color: #555;">Date:</td>
+                  <td style="padding: 8px 0; color: #333;">${new Date(enrollment.enrollmentDate).toLocaleDateString('en-IN')}</td>
                 </tr>
                 <tr>
                   <td style="padding: 8px 0; font-weight: bold; color: #555;">Status:</td>
@@ -189,8 +220,15 @@ const emailTemplates = {
             
             ${enrollment.motivation ? `
             <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-              <h3 style="color: #667eea; margin-top: 0;">Student Motivation</h3>
-              <p style="color: #555; line-height: 1.6; margin: 0;">${enrollment.motivation}</p>
+              <h3 style="color: #667eea; margin-top: 0;">Motivation / Notes</h3>
+              <p style="color: #555; line-height: 1.6; margin: 0; white-space: pre-wrap;">${enrollment.motivation}</p>
+            </div>
+            ` : ''}
+
+            ${enrollment.learningGoals ? `
+            <div style="background: white; padding: 20px; border-radius: 8px; margin: 20px 0; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <h3 style="color: #667eea; margin-top: 0;">Goals / Requirements</h3>
+              <p style="color: #555; line-height: 1.6; margin: 0; white-space: pre-wrap;">${enrollment.learningGoals}</p>
             </div>
             ` : ''}
             
@@ -202,7 +240,7 @@ const emailTemplates = {
           </div>
           
           <div style="background: #333; color: white; padding: 20px; text-align: center; font-size: 14px;">
-            <p style="margin: 0;">© 2024 Cyberatrix Solutions. All rights reserved.</p>
+            <p style="margin: 0;">© ${new Date().getFullYear()} Cyberatrix Solutions. All rights reserved.</p>
           </div>
         </div>
       `
